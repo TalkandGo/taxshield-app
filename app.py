@@ -1,5 +1,4 @@
 import streamlit as st
-import streamlit.components.v1 as components
 
 # --- 1. INITIALIZE GLOBAL SECURITY STATE ---
 if "is_subscribed" not in st.session_state:
@@ -9,39 +8,9 @@ if "estimated_savings" not in st.session_state:
     st.session_state.estimated_savings = 0.0
 
 # --- 2. CONFIGURABLE CHECKOUT PORTAL URLS ---
-# Paste your Stripe payment link right here inside the quotes:
+# Replace these with your direct shareable product/billing payment links:
+PAYPAL_SUBSCRIPTION_URL = "https://paypal.com"  
 STRIPE_SUBSCRIPTION_URL = "https://stripe.com"  
-
-# 🖼️ YOUR APP DEMO ANIMATION LINK:
-# Replace this with a link to an animated GIF demonstrating your app in motion!
-# Right now, it points to a premium financial dashboard layout placeholder animation loop.
-APP_DEMO_GIF_URL = "https://giphy.com"
-
-# Your real embedded PayPal Subscription Button script
-PAYPAL_BUTTON_HTML = """
-<div style="text-align: center;">
-    <div id="paypal-button-container-P-0CH31499JV265374YNLZJYJI"></div>
-</div>
-<script src="https://paypal.com" data-sdk-integration-source="button-factory"></script>
-<script>
-  paypal.Buttons({
-      style: {
-          shape: 'rect',
-          color: 'gold',
-          layout: 'vertical',
-          label: 'subscribe'
-      },
-      createSubscription: function(data, actions) {
-        return actions.subscription.create({
-          plan_id: 'P-0CH31499JV265374YNLZJYJI'
-        });
-      },
-      onApprove: function(data, actions) {
-        alert("Subscription Approved! ID: " + data.subscriptionID); 
-      }
-  }).render('#paypal-button-container-P-0CH31499JV265374YNLZJYJI');
-</script>
-"""
 
 # --- 3. TRANSLATION MAP ---
 translations = {
@@ -58,11 +27,17 @@ translations = {
         "receipt_subtext": "Lose your receipts easily? Type the amount OR snap a picture below.",
         "upload_label": "Snap / Upload Receipt Pic",
         "paywall_title": "💳 Subscription Required ($12.99/mo)",
-        "paywall_text": "Unlock complete interactive access to your KeepRest platform. Watch the interactive dashboard workflow preview below:",
+        "paywall_text": "Unlock complete interactive access to your personal KeepRest tax workspace instantly.",
+        "paypal_button_text": "🟡 Subscribe via PayPal",
         "stripe_button_text": "💳 Subscribe via Stripe",
         "activation_label": "Owner Bypass or Paid Account? Enter passcode to unlock:",
         "btn_activate": "Unlock App Dashboard",
-        "preview_banner": "👀 PREVIEW MODE: Below is a read-only preview of what you get when you subscribe."
+        "preview_banner": "👀 PREVIEW MODE: Below is a read-only preview of what you get when you subscribe.",
+        
+        "demo_title": "📱 How KeepRest Works (Quick Tour):",
+        "step_1": "1️⃣ **Choose your State** - The dashboard instantly loads local rules.",
+        "step_2": "2️⃣ **Input Monthly Revenue** - The tax calculator updates your progress automatically.",
+        "step_3": "3️⃣ **Vault Receipts** - Type values or upload screenshots to claim instant business write-offs."
     }
 }
 
@@ -88,23 +63,25 @@ def render_dashboard(disabled_mode=False):
 st.title(t["app_title"])
 
 if not st.session_state.is_subscribed:
-    # --- SHOW PAYWALL AND MOVING PREVIEW DIRECTLY ON FRONT PAGE ---
+    # --- SHOW PAYWALL DIRECTLY ON FRONT PAGE ---
     with st.container(border=True):
         st.subheader(t["paywall_title"])
         st.write(t["paywall_text"])
-        
-        # 🎬 The moving walkthrough showcase loop
-        st.image(APP_DEMO_GIF_URL, caption="KeepRest Platform Functionality Demo Walkthrough", use_container_width=True)
         st.divider()
         
-        # Checkout Option Gateways
+        # 🧾 Clean Text Walkthrough instead of unpredictable web elements
+        st.markdown(f"### {t['demo_title']}")
+        st.markdown(t["step_1"])
+        st.markdown(t["step_2"])
+        st.markdown(t["step_3"])
+        st.divider()
+        
+        # Checkout Option Gateways (Using clean, unbreakable native layout buttons)
         st.markdown("### 🔒 Select a Gateway to Subscribe:")
         c1, c2 = st.columns(2)
         with c1:
-            components.html(PAYPAL_BUTTON_HTML, height=180, scrolling=False)
+            st.link_button(t["paypal_button_text"], PAYPAL_SUBSCRIPTION_URL, use_container_width=True)
         with c2:
-            st.write("")  # layout cushion
-            st.write("")
             st.link_button(t["stripe_button_text"], STRIPE_SUBSCRIPTION_URL, use_container_width=True)
             
         st.divider()
