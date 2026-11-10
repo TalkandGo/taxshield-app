@@ -1,74 +1,97 @@
 import streamlit as st
 
-st.set_page_config(page_title="KeepRest", page_icon="🛡️", layout="centered")
+# --- 1. INITIALIZE GLOBAL APPS SESSION STATE ---
+if "estimated_savings" not in st.session_state:
+    st.session_state.estimated_savings = 0.0
 
-# Clean 10-Language Selector Dropdown Matrix
-lang_map = {
-    "English": "en", "Español": "es", "简体中文": "zh", "Français": "fr", 
-    "العربية": "ar", "Tagalog": "tl", "Tiếng Việt": "vi", "한국어": "ko", 
-    "Português": "pt", "हिन्दी": "hi"
-}
-selected_lang = st.selectbox("🌐 Choose Language / Idioma / 语言 / भाषा", list(lang_map.keys()))
-
-st.title("🛡️ KeepRest")
-st.warning("⏰ **FRIENDLY TAX SEASON REMINDER:** Tax time is getting close! Keep saving and logging your receipts so you are 100% prepared.")
-
-# Initialize background data counters
-if 'tax_vault' not in st.session_state: st.session_state.tax_vault = 0.00
-if 'estimated_savings' not in st.session_state: st.session_state.estimated_savings = 0.00
-
-st.markdown("---")
-st.markdown("### ⚙️ Settings")
-state_rates = {"California": 0.33, "New York": 0.32, "Texas": 0.25, "Florida": 0.25, "North Carolina": 0.28, "Illinois": 0.29, "Ohio": 0.27, "Georgia": 0.28, "Pennsylvania": 0.28, "Washington": 0.25, "Virginia": 0.28, "Massachusetts": 0.30}
-chosen_state = st.selectbox("Select Your US State", list(state_rates.keys()))
-tax_rate = state_rates[chosen_state]
-
-st.markdown("---")
-st.markdown("### 💰 Income Calculator")
-income = st.number_input("Enter Your New Income Amount ($)", min_value=0.0, value=0.0, step=100.0)
-
-if income > 0:
-    calculated_tax = income * tax_rate
-    safe_spend = income - calculated_tax
-    st.markdown(f"**Tax to set aside in your private bank account ({int(tax_rate * 100)}%):** `${calculated_tax:,.2f}`")
-    st.markdown(f"**Guilt-free money left over to spend:** <span style='color:#1565c0; font-weight:bold; font-size:22px;'>${safe_spend:,.2f}</span>", unsafe_allow_html=True)
-    st.session_state.tax_vault = calculated_tax
-
-st.markdown("---")
-st.markdown("### 📁 Receipt Vault & Tax Saver Estimator")
-st.caption("💡 Lose your receipts easily? Type the amount OR snap a picture below to securely store it for tax time!")
-
-col_exp_pic, col_exp_amt = st.columns(2)
-with col_exp_pic: receipt_file = st.file_uploader("📷 Snap / Upload Receipt Pic", type=["jpg", "jpeg", "png"])
-with col_exp_amt: expense_amt = st.number_input("Enter Receipt Total ($)", min_value=0.0, value=0.0, step=10.0)
-
-if (expense_amt > 0 or receipt_file) and st.button("📁 Save to Receipt Vault"):
-    st.session_state.estimated_savings += ((expense_amt if expense_amt > 0 else 50.00) * 0.15)
-    st.success("Receipt safely saved in your vault! Keeping records lowers your final tax bill.")
-
-
-st.markdown("---")
-st.markdown("### 🔒 Your Tax & Savings Ledger Balance")
-col1, col2 = st.columns(2)
-with col1: st.metric(label="Estimated Total Tax to Set Aside", value=f"${st.session_state.tax_vault:,.2f}")
-with col2: st.metric(label="Estimated Tax Savings From Receipts", value=f"${st.session_state.estimated_savings:,.2f}")
-st.markdown("🟢 Keep your tax money safe inside your main bank or PayPal account. What remains is **100% yours to spend without guilt.**")
-import streamlit as st
-
-st.set_page_config(page_title="KeepRest", page_icon="🛡️", layout="centered")
-
-# --- PLACE YOUR STRIPE CHECKOUT WEB ADDRESS LINK HERE ---
-# When users tap your button, it opens this pre-made secure payment page hosted by Stripe
-STRIPE_SUBSCRIBE_URL = "https://stripe.com"
-
-# --- 10 MINI-COMPRESSED LANGUAGES DICTIONARY ---
+# --- 2. MULTILINGUAL TRANSLATION DICTIONARY MAP ---
 translations = {
-    "English": {"title": "KeepRest", "caption": "Relax. Your tax is handled. Focus on growing your business.", "settings_hdr": "⚙️ Settings", "state_lbl": "Select Your US State", "income_hdr": "💰 Income Calculator", "income_lbl": "Enter Your New Income Amount ($)", "tax_aside": "Tax to set aside in your private bank account", "safe_spend": "Guilt-free money left over to spend:", "expense_hdr": "📁 Receipt Vault & Tax Saver Estimator", "expense_lbl": "💡 Lose your receipts easily? Type the amount OR snap a picture below to securely store it for tax time!", "expense_logged": "Enter Receipt Total ($) - Optional if uploading image", "btn_log": "📁 Save to Receipt Vault & Estimate Savings", "expense_success": "Receipt safely saved in your vault! Keeping records lowers your final tax bill.", "reminder_banner": "⏰ **FRIENDLY TAX SEASON REMINDER:** Tax time is getting close! Keep saving and logging your write-offs so you are 100% prepared.", "vault_hdr": "🔒 Your Tax & Savings Ledger Balance", "vault_metric": "Estimated Total Tax to Set Aside", "total_writeoffs": "Estimated Tax Savings From Receipts", "peace_of_mind": "🟢 Keep your tax money safe inside your main bank or PayPal account. What remains is **100% yours to spend without guilt.**", "pay_btn": "💳 Upgrade to Premium ($24.99/mo)"},
-    "Español": {"title": "KeepRest", "caption": "Relájate. Tus impuestos están bajo control. Enfócate en tu negocio.", "settings_hdr": "⚙️ Configuración", "state_lbl": "Selecciona tu Estado de EE. UU.", "income_hdr": "💰 Calculadora de Ingresos", "income_lbl": "Ingresa el Monto de tu Nuevo Ingreso ($)", "tax_aside": "Impuesto a guardar en tu cuenta bancaria privada", "safe_spend": "Dinero libre de culpa que te queda para gastar:", "expense_hdr": "📁 Bóveda de Recibos y Gastos", "expense_lbl": "💡 ¿Pierdes tus recibos fácilmente? ¡Ingresa el monto O toma uma foto abajo!", "expense_logged": "Ingresa el Total del Recibo ($)", "btn_log": "📁 Guardar en la Bóveda de Recibos", "expense_success": "¡Recibo guardado con éxito!", "reminder_banner": "⏰ **RECORDATORIO AMISTOSO:** ¡La temporada de impuestos se acerca!", "vault_hdr": "🔒 Balance de tu Libro de Impuestos", "vault_metric": "Impuesto Total Estimado", "total_writeoffs": "Ahorro Estimado por Recibos", "peace_of_mind": "🟢 Mantén tu dinero seguro. El resto es 100% tuyo.", "pay_btn": "💳 Suscribirse a Premium ($24.99/mes)"},
-    "简体中文": {"title": "KeepRest", "caption": "放轻松。税款已为您留存。专心发展您的业务即可。", "settings_hdr": "⚙️ 设置", "state_lbl": "选择您所在的美国联邦州", "income_hdr": "💰 收入计算器", "income_lbl": "输入您的新收入金额 ($)", "tax_aside": "需存入您个人银行账户的税款", "safe_spend": "您可以放心消费的剩余金额：", "expense_hdr": "📁 收据保险库与预计省税估算", "expense_lbl": "💡 经常弄丢收据？在下方输入金额“或”拍照储存！", "expense_logged": "输入收据总额 ($)", "btn_log": "📁 保存至收据保险库", "expense_success": "收据已安全保存！", "reminder_banner": "⏰ **温馨税务提示：** 纳税期快到了！", "vault_hdr": "🔒 您的税务与储蓄账本余额", "vault_metric": "预估需留存的税款总额", "total_writeoffs": "预估省税总额", "peace_of_mind": "🟢 请将税款安全存放。其余资金 100% 属于您。", "pay_btn": "💳 升级至高级版 ($24.99/月)"},
-    "Français": {"title": "KeepRest", "caption": "Détendez-vous. Vos impôts sont gérés. Concentrez-vous sur votre entreprise.", "settings_hdr": "⚙️ Paramètres", "state_lbl": "Sélectionnez votre État américain", "income_hdr": "💰 Calculateur de Revenus", "income_lbl": "Entrez le montant de votre nouveau revenu ($)", "tax_aside": "Impôt à mettre de côté", "safe_spend": "Argent que vous pouvez dépenser l'esprit tranquille :", "expense_hdr": "📁 Coffre de Reçus", "expense_lbl": "💡 Vous perdez souvent vos reçus ? Saisissez le montant OU prenez une photo !", "expense_logged": "Entrez le total du reçu ($)", "btn_log": "📁 Enregistrer dans le coffre", "expense_success": "Reçu sauvegardé !", "reminder_banner": "⏰ **RAPPEL FISCAL AMICAL :** La période des impôts approche !", "vault_hdr": "🔒 Solde du Grand Livre Fiscal", "vault_metric": "Impôt total estimé", "total_writeoffs": "Économies d'impôt estimées", "peace_of_mind": "🟢 Gardez votre argent en sécurité. Le reste est 100% à vous.", "pay_btn": "💳 S'abonner à Premium ($24.99/mois)"},
-    "العربية": {"title": "KeepRest", "caption": "استرخِ. ضرائبك مُعالجة بالكامل. ركّز على نمو عملك وتجارتك.", "settings_hdr": "⚙️ الإعدادات", "state_lbl": "اختر ولايتك الأمريكية", "income_hdr": "💰 حاسبة الدخل", "income_lbl": "أدخل مبلغ الدخل الجديد ($)", "tax_aside": "الضرائب التي يجب تجنيبها في حسابك البنكي", "safe_spend": "الأموال المتبقية المتاحة للإنفاق دون قلق:", "expense_hdr": "📁 خزنة الإيصالات ومُقدّر توفير الضرائب", "expense_lbl": "💡 هل تفقد إإيصالاتك؟ اكتب المبلغ أو التقط صورة!", "expense_logged": "أدخل إجمالي الإيصال ($)", "btn_log": "📁 حفظ في خزنة الإيصالات", "expense_success": "تم حفظ الإيصال بأمان!", "reminder_banner": "⏰ **تذكير ودي بموسم الضرائب:** وقت الضرائب يقترب!", "vault_hdr": "🔒 رصيد دفتر الضرائب", "vault_metric": "إجمالي الضرائب المقدرة", "total_writeoffs": "الوفر الضريبي المقدر", "peace_of_mind": "🟢 احتفظ بأموال الضرائب بأمان. المتبقي هو 100% ملكك.", "pay_btn": "💳 الاشتراك في النسخة المدفوعة ($24.99/شهر)"},
-    "Tagalog": {"title": "KeepRest", "caption": "Mag-relax. Ang buwis mo ay maayos na. Mag-focus sa iyong negosyo.", "settings_hdr": "⚙️ Mga Setting", "state_lbl": "Piliin ang Iyong Estado sa US", "income_hdr": "💰 Calculator ng Kita", "income_lbl": "Ilagay ang Iyong Bagong Kita ($)", "tax_aside": "Buwis na itatabi sa iyong bank account", "safe_spend": "Pera na ligtas gastusin:", "expense_hdr": "📁 Vault ng Resibo", "expense_lbl": "💡 Madali bang mawala ang iyong resibo? I-type ang halaga O kumuha ng larawan!", "expense_logged": "Ilagay ang Total ng Resibo ($)", "btn_log": "📁 I-save sa Receipt Vault", "expense_success": "Ligtas na na-save ang resibo!", "reminder_banner": "⏰ **PAALALA PARA SA TAX SEASON:** Malapit na ang buwis!", "vault_hdr": "🔒 Balanse ng Iyong Tax Ledger", "vault_metric": "Kabuuang Buwis na Itatabi", "total_writeoffs": "Estimated na Tipid sa Buwis", "peace_of_mind": "🟢 Itabi ang pera para sa buwis. Ang natitira ay 100% na sa iyo.", "pay_btn": "💳 Mag-upgrade sa Premium ($24.99/buwan)"},
-    "Tiếng Việt": {"title": "KeepRest", "caption": "Thư giãn đi. Thuế của bạn đã được xử lý. Hãy tập trung phát triển kinh doanh.", "settings_hdr": "⚙️ Cài đặt", "state_lbl": "Chọn Bang tại Mỹ của Bạn", "income_hdr": "💰 Máy tính Doanh thu", "income_lbl": "Nhập Số tiền Doanh thu Mới của Bạn ($)", "tax_aside": "Tiền thuế cần trích ra gửi vào tài khoản ngân hàng", "safe_spend": "Số tiền bạn có thể thoải mái chi tiêu:", "expense_hdr": "📁 Két Lưu Trữ Hóa Đơn", "expense_lbl": "💡 Bạn hay làm mất hóa đơn? Nhập số tiền HOẶC chụp hình bên dưới!", "expense_logged": "Nhập Tổng tiền Hóa đơn ($)", "btn_log": "📁 Lưu vào Két Hóa Đơn", "expense_success": "Đã lưu hóa đơn an toàn!", "reminder_banner": "⏰ **NHẮC NHỞ MÙA THUẾ:** Mùa thuế đang đến rất gần!", "vault_hdr": "🔒 Số dư Sổ cái Thuế", "vault_metric": "Tổng Tiền Thuế Ước Tính", "total_writeoffs": "Tiền Tiết Kiệm Thuế Ước Tính", "peace_of_mind": "🟢 Hãy giữ tiền thuế an toàn. Số tiền còn lại là 100% của bạn.", "pay_btn": "💳 Nâng cấp lên bản Premium ($24.99/tháng)"},
-    "한국어": {"title": "KeepRest", "caption": "안심하세요. 세금은 이미 처리되었습니다. 사업 성장에만 집중하세요.", "settings_hdr": "⚙️ 설정", "state_lbl": "미국 주(State) 선택", "income_hdr": "💰 수입 계산기", "income_lbl": "새로운 수입 금액 입력 ($)", "tax_aside": "은행 계좌에 따로 보관할 세금", "safe_spend": "마음 편히 사용할 수 있는 돈:", "expense_hdr": "📁 영수증 보관함", "expense_lbl": "💡 영수증을 자주 분실하시나요? 금액을 입력하거나 사진을 찍어 보관하세요!", "expense_logged": "영수증 총액 입력 ($)", "btn_log": "📁 영수증 보관함에 저장", "expense_success": "영수증이 안전하게 저장되었습니다!", "reminder_banner": "⏰ **세금 시즌 알림:** 세금 신고 기간이 다가오고 있습니다!", "vault_hdr": "🔒 세금 및 저축 장부 잔액", "vault_metric": "따로 보관할 예상 총 세금", "total_writeoffs": "예상 세금 절감액", "peace_of_mind": "🟢 세금은 안전하게 보관하세요. 남은 금액은 100% 귀하의 돈입니다.", "pay_btn": "💳 프리미엄으로 업그레이드 ($24.99/월)"},
-    "Português": {"title": "KeepRest", "caption": "Relaxe. Seus impostos estão resolvidos. Foque em crescer seu negócio.", "settings_hdr": "⚙️ Configurações", "state_lbl": "Selecione Seu Estado dos EUA", "income_hdr": "💰 Calculadora de Faturamento", "income_lbl": "Digite o Valor do Novo Faturamento ($)", "tax_aside": "Imposto a reservar na sua conta bancária", "safe_spend": "Dinheiro livre de culpa para gastar:", "expense_hdr": "📁 Cofre de Recibos", "expense_lbl": "💡 Perde seus recibos facilmente? Digite o valor OU tire uma foto abaixo!", "expense_logged": "Digite o Total do Recibo ($)", "btn_log": "📁 Salvar no Cofre de Recibos", "expense_success": "Recibo salvo com segurança!", "reminder_banner": "⏰ **LEMBRETE AMIGÁVEL DA ÉPOCA DE IMPOSTOS:** A temporada de impostos está chegando!", "vault_hdr": "🔒 Saldo do seu Livro de Impostos", "vault_metric": "Total Estimado de Imposto a Reservar", "total_writeoffs": "Economia de Imposto Estimada", "peace_of_mind": "🟢 Mantenha o dinheiro do imposto seguro. O restante é 100% seu.", "pay_btn": "💳 Atualizar para Premium ($24.99/mês)"},
+    "English": {
+        "app_title": "KeepRest App Dashboard",
+        "tax_reminder": "📢 FRIENDLY TAX SEASON REMINDER: Tax time is around the corner. Organize your receipts so you are 100% prepared.",
+        "settings_header": "⚙️ Settings",
+        "state_label": "Select Your US State",
+        "calculator_header": "💰 Income Calculator",
+        "income_input_label": "Enter Your New Income Amount ($)",
+        "savings_label": "Estimated Tax Savings Progress",
+        "peace_of_mind": "✨ Your financial data is securely tracked for absolute peace of mind.",
+        "receipt_header": "📂 Receipt Vault & Tax Saver Engine",
+        "receipt_subtext": "Lose your receipts easily? Type the amount OR snap a picture below.",
+        "upload_label": "Snap / Upload Receipt Pic",
+        "premium_sidebar_title": "💳 KeepRest Premium Account Portal",
+        "premium_sidebar_text": "Unlock automated matching receipt algorithms and live regional tax advisor tracking panels.",
+        "upgrade_button_label": "Upgrade to Premium Plans",
+        "premium_features_promo": "Get full corporate-grade automated tax deduction tracking for less than $10 a month.",
+        "checkout_button_text": "💳 Complete Premium Upgrade Checkout",
+        "checkout_redirect_msg": "Redirecting you to our secure payment processor stripe checkout now..."
+    },
+    "Spanish": {
+        "app_title": "Panel de Control KeepRest",
+        "tax_reminder": "📢 RECORDATORIO AFABLE DE LA TEMPORADA DE IMPUESTOS: La época de impuestos está a la vuelta de la esquina. Organiza tus recibos.",
+        "settings_header": "⚙️ Configuración",
+        "state_label": "Seleccione su Estado de EE.UU.",
+        "calculator_header": "💰 Calculadora de Ingresos",
+        "income_input_label": "Ingrese su Nuevo Monto de Ingresos ($)",
+        "savings_label": "Progreso de Ahorros Fiscales Estimados",
+        "peace_of_mind": "✨ Tus datos financieros están rastreados de forma segura para tu tranquilidad.",
+        "receipt_header": "📂 Bóveda de Recibos y Motor de Ahorro",
+        "receipt_subtext": "¿Pierdes tus recibos fácilmente? Escribe el monto O toma una foto abajo.",
+        "upload_label": "Tomar / Subir Foto de Recibo",
+        "premium_sidebar_title": "💳 Portal de Cuenta Premium KeepRest",
+        "premium_sidebar_text": "Desbloquea algoritmos automáticos de emparejamiento de recibos y paneles de asesores fiscales.",
+        "upgrade_button_label": "Actualizar a Planes Premium",
+        "premium_features_promo": "Obtén seguimiento fiscal corporativo automatizado por menos de $10 al mes.",
+        "checkout_button_text": "💳 Completar Pago de Actualización Premium",
+        "checkout_redirect_msg": "Redirigiendo a nuestro procesador de pagos seguro stripe ahora..."
+    }
+}
+
+# --- 3. LANGUAGE PICKER DROPDOWN CONFIGURATION ---
+selected_language = st.selectbox("Choose Language / Idioma / 语言 / भाषा", list(translations.keys()))
+lang = translations[selected_language]
+
+st.title(lang["app_title"])
+
+# --- 4. APP REMINDER BANNER ---
+st.info(lang["tax_reminder"])
+
+# --- 5. MAIN MAIN INTERFACE SETTINGS SECTION ---
+st.subheader(lang["settings_header"])
+selected_state = st.selectbox(lang["state_label"], ["California", "New York", "Texas", "Florida", "North Carolina"])
+
+# --- 6. TAX ENGINE INCOME CALCULATOR SECTION ---
+st.subheader(lang["calculator_header"])
+income_amount = st.number_input(lang["income_input_label"], min_value=0.0, step=100.0, value=0.0)
+
+# Quick calculation rule logic to populate dynamic variable updates
+if income_amount > 0:
+    st.session_state.estimated_savings = income_amount * 0.15
+else:
+    st.session_state.estimated_savings = 0.0
+
+# Render dynamic visual savings variables metrics
+st.metric(label=lang["savings_label"], value=f"${st.session_state.estimated_savings:,.2f}")
+st.markdown(lang["peace_of_mind"])
+
+# --- 7. FILE MANAGEMENT RECEIPT VAULT LOADING BLOCKS ---
+st.subheader(lang["receipt_header"])
+st.write(lang["receipt_subtext"])
+uploaded_pic = st.file_uploader(lang["upload_label"], type=["jpg", "jpeg", "png"])
+
+if uploaded_pic is not None:
+    st.success("File uploaded successfully!")
+
+# --- 8. GLOBAL CONVERSION PREMIUM SIDEBAR SUBSCRIPTION DRAWER ---
+with st.sidebar:
+    st.header(lang["premium_sidebar_title"])
+    st.write(lang["premium_sidebar_text"])
+    st.divider()
+    
+    # Secure layout interactive premium expansion pane container
+    with st.expander(f"⚙️ {lang['upgrade_button_label']}", expanded=True):
+        st.warning(lang["premium_features_promo"])
+        
+        # Primary payment triggers checking dynamic translation on click
+        if st.button(lang["checkout_button_text"], type="primary", use_container_width=True):
+            st.success(lang["checkout_redirect_msg"])
+            st.balloons()
