@@ -4,7 +4,14 @@ import streamlit as st
 if "estimated_savings" not in st.session_state:
     st.session_state.estimated_savings = 0.0
 
-# --- 2. MULTILINGUAL TRANSLATION DICTIONARY MAP ---
+# --- 2. CONFIGURABLE ECOSYSTEM GATEWAY URLS ---
+# Replace this with your direct PayPal payment link or your paypal.me address:
+PAYPAL_PAYMENT_URL = "https://paypal.com"  
+
+# Leave this as None for now. Once you want to add Stripe later, just paste your ://stripe.com link here:
+STRIPE_PAYMENT_URL = None  
+
+# --- 3. MULTILINGUAL TRANSLATION DICTIONARY MAP ---
 translations = {
     "English": {
         "app_title": "KeepRest App Dashboard",
@@ -22,8 +29,8 @@ translations = {
         "premium_sidebar_text": "Unlock automated matching receipt algorithms and live regional tax advisor tracking panels.",
         "upgrade_button_label": "Upgrade to Premium Plans",
         "premium_features_promo": "Get full corporate-grade automated tax deduction tracking for less than $10 a month.",
-        "checkout_button_text": "💳 Complete Premium Upgrade Checkout",
-        "checkout_redirect_msg": "Redirecting you to our secure payment processor stripe checkout now..."
+        "paypal_button_text": "🟡 Complete Upgrade via PayPal",
+        "stripe_button_text": "💳 Complete Upgrade via Stripe"
     },
     "Spanish": {
         "app_title": "Panel de Control KeepRest",
@@ -41,39 +48,37 @@ translations = {
         "premium_sidebar_text": "Desbloquea algoritmos automáticos de emparejamiento de recibos y paneles de asesores fiscales.",
         "upgrade_button_label": "Actualizar a Planes Premium",
         "premium_features_promo": "Obtén seguimiento fiscal corporativo automatizado por menos de $10 al mes.",
-        "checkout_button_text": "💳 Completar Pago de Actualización Premium",
-        "checkout_redirect_msg": "Redirigiendo a nuestro procesador de pagos seguro stripe ahora..."
+        "paypal_button_text": "🟡 Completar Pago con PayPal",
+        "stripe_button_text": "💳 Completar Pago con Stripe"
     }
 }
 
-# --- 3. LANGUAGE PICKER DROPDOWN CONFIGURATION ---
-selected_language = st.selectbox("Choose Language / Idioma / 语言 / भाषा", list(translations.keys()))
+# --- 4. LANGUAGE PICKER DROPDOWN CONFIGURATION ---
+selected_language = st.selectbox("Choose Language / Idioma / 语言 /  भाषा", list(translations.keys()))
 lang = translations[selected_language]
 
 st.title(lang["app_title"])
 
-# --- 4. APP REMINDER BANNER ---
+# --- 5. APP REMINDER BANNER ---
 st.info(lang["tax_reminder"])
 
-# --- 5. MAIN MAIN INTERFACE SETTINGS SECTION ---
+# --- 6. MAIN MAIN INTERFACE SETTINGS SECTION ---
 st.subheader(lang["settings_header"])
 selected_state = st.selectbox(lang["state_label"], ["California", "New York", "Texas", "Florida", "North Carolina"])
 
-# --- 6. TAX ENGINE INCOME CALCULATOR SECTION ---
+# --- 7. TAX ENGINE INCOME CALCULATOR SECTION ---
 st.subheader(lang["calculator_header"])
 income_amount = st.number_input(lang["income_input_label"], min_value=0.0, step=100.0, value=0.0)
 
-# Quick calculation rule logic to populate dynamic variable updates
 if income_amount > 0:
     st.session_state.estimated_savings = income_amount * 0.15
 else:
     st.session_state.estimated_savings = 0.0
 
-# Render dynamic visual savings variables metrics
 st.metric(label=lang["savings_label"], value=f"${st.session_state.estimated_savings:,.2f}")
 st.markdown(lang["peace_of_mind"])
 
-# --- 7. FILE MANAGEMENT RECEIPT VAULT LOADING BLOCKS ---
+# --- 8. FILE MANAGEMENT RECEIPT VAULT LOADING BLOCKS ---
 st.subheader(lang["receipt_header"])
 st.write(lang["receipt_subtext"])
 uploaded_pic = st.file_uploader(lang["upload_label"], type=["jpg", "jpeg", "png"])
@@ -81,17 +86,29 @@ uploaded_pic = st.file_uploader(lang["upload_label"], type=["jpg", "jpeg", "png"
 if uploaded_pic is not None:
     st.success("File uploaded successfully!")
 
-# --- 8. GLOBAL CONVERSION PREMIUM SIDEBAR SUBSCRIPTION DRAWER ---
+# --- 9. GLOBAL CONVERSION PREMIUM SIDEBAR SUBSCRIPTION DRAWER ---
 with st.sidebar:
     st.header(lang["premium_sidebar_title"])
     st.write(lang["premium_sidebar_text"])
     st.divider()
     
-    # Secure layout interactive premium expansion pane container
     with st.expander(f"⚙️ {lang['upgrade_button_label']}", expanded=True):
         st.warning(lang["premium_features_promo"])
         
-        # Primary payment triggers checking dynamic translation on click
-        if st.button(lang["checkout_button_text"], type="primary", use_container_width=True):
-            st.success(lang["checkout_redirect_msg"])
-            st.balloons()
+        # Primary Action Option 1: Live PayPal Checkout Gateway
+        st.link_button(
+            label=lang["paypal_button_text"],
+            url=PAYPAL_PAYMENT_URL,
+            type="primary",
+            use_container_width=True
+        )
+        
+        # Primary Action Option 2: Stripe Checkout Gateway (Loads only when link is provided above)
+        if STRIPE_PAYMENT_URL:
+            st.divider()
+            st.link_button(
+                label=lang["stripe_button_text"],
+                url=STRIPE_PAYMENT_URL,
+                type="secondary",
+                use_container_width=True
+            )
