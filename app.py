@@ -5,7 +5,7 @@ if "is_subscribed" not in st.session_state:
     st.session_state.is_subscribed = False
 
 # --- 2. CONFIGURABLE CHECKOUT PORTAL URLS ---
-# 🟡 PASTE YOUR COPIED RECURRING PLAN URL HERE:
+# Paste your active PayPal Subscription Plan Link right here:
 PAYPAL_SUBSCRIPTION_URL = "https://paypal.com"  
 STRIPE_SUBSCRIPTION_URL = "https://stripe.com"  
 
@@ -16,12 +16,12 @@ translations = {
         "tax_reminder": "📢 FRIENDLY TAX SEASON REMINDER: Tax time is around the corner. Organize your receipts so you are 100% prepared.",
         "settings_header": "⚙️ Settings",
         "state_label": "Select Your US State",
-        "calculator_header": "💰 Income Calculator",
-        "income_input_label": "Enter Your New Income Amount ($)",
-        "savings_label": "Estimated Tax Savings Progress",
+        "calculator_header": "💰 1099 Income Tax Estimator",
+        "income_input_label": "Enter Your 1099 Income Amount ($)",
+        "savings_label": "Amount To Set Aside For Upcoming Taxes",
         "peace_of_mind": "✨ Your financial data is securely tracked for absolute peace of mind.",
         "receipt_header": "📂 Receipt Vault & Tax Saver Engine",
-        "receipt_subtext": "Lose your receipts easily? Type the amount OR snap a picture below.",
+        "receipt_subtext": "Lose your receipts easily? Type the amount OR snap a picture below to keep them safely organized for your tax accountant.",
         "upload_label": "Snap / Upload Receipt Pic",
         "paywall_title": "💳 Subscription Required ($12.99/mo)",
         "paywall_text": "Unlock complete interactive access to your personal KeepRest tax workspace instantly.",
@@ -33,8 +33,8 @@ translations = {
         
         "demo_title": "📱 How KeepRest Works (Quick Tour):",
         "step_1": "1️⃣ **Choose your State** - The dashboard instantly loads local rules.",
-        "step_2": "2️⃣ **Input Monthly Revenue** - The tax calculator updates your progress automatically.",
-        "step_3": "3️⃣ **Vault Receipts** - Type values or upload screenshots to claim instant business write-offs."
+        "step_2": "2️⃣ **Input 1099 Revenue** - Know exactly how much to set aside for the IRS.",
+        "step_3": "3️⃣ **Vault Receipts** - Snap and store photos so you never lose a tax deduction write-off."
     }
 }
 
@@ -63,33 +63,22 @@ def render_dashboard(disabled_mode=False):
     st.header(t["calculator_header"])
     income = st.number_input(t["income_input_label"], min_value=0.0, step=1000.0, disabled=disabled_mode, key="income_box")
     
-    # 🧮 LIVE TAX SAVINGS PROGRESS ENGINE 
+    # 🧮 SELF-EMPLOYED 1099 TAX BUFFER CALCULATION
+    # Sets aside a 15% buffer for state-tax-free zones or 25% to safely cover combined Self-Employment + State tax cushions
     no_state_tax = ["Alaska", "Florida", "Nevada", "New Hampshire", "South Dakota", "Tennessee", "Texas", "Washington", "Wyoming"]
     
     if selected_state in no_state_tax:
-        tax_rate = 0.15  # 15% buffer
+        tax_rate = 0.15  
     else:
-        tax_rate = 0.25  # 25% cushion
+        tax_rate = 0.25  
         
     calculated_savings = income * tax_rate
-    net_income = income - calculated_savings
     
-    # Visual Breakdown Table Metrics
-    col1, col2 = st.columns(2)
-    with col1:
-        st.metric(label=t["savings_label"], value=f"${calculated_savings:,.2f}")
-    with col2:
-        st.metric(label="Net Income Post-Tax", value=f"${net_income:,.2f}")
-        
-    # Render Data Matrix Summary Table
-    st.markdown("### 📊 Live Financial Overview")
-    st.table({
-        "Financial Metric": ["Gross Revenue Listed", "Calculated Tax Rate", "Total Reserved Taxes", "Remaining Net Balance"],
-        "Value Amount": [f"${income:,.2f}", f"{tax_rate*100:.0f}%", f"${calculated_savings:,.2f}", f"${net_income:,.2f}"]
-    })
-    
+    # Clear, direct financial guidance metric for 1099 workers
+    st.metric(label=t["savings_label"], value=f"${calculated_savings:,.2f}")
     st.caption(t["peace_of_mind"])
 
+    # Safe account keeper zone for receipt handoffs to CPA/tax pros
     st.header(t["receipt_header"])
     st.write(t["receipt_subtext"])
     st.file_uploader(t["upload_label"], type=["png", "jpg", "jpeg"], disabled=disabled_mode, key="vault_box")
