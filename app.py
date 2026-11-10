@@ -4,11 +4,8 @@ import streamlit as st
 if "is_subscribed" not in st.session_state:
     st.session_state.is_subscribed = False
 
-if "estimated_savings" not in st.session_state:
-    st.session_state.estimated_savings = 0.0
-
 # --- 2. CONFIGURABLE CHECKOUT PORTAL URLS ---
-# Replace these with your direct shareable product/billing payment links:
+# Replace these with your actual copied shareable product payment links:
 PAYPAL_SUBSCRIPTION_URL = "https://paypal.com"  
 STRIPE_SUBSCRIPTION_URL = "https://stripe.com"  
 
@@ -47,11 +44,21 @@ t = translations["English"]
 def render_dashboard(disabled_mode=False):
     st.header(t["settings_header"])
     us_states = ["California", "Texas", "Florida", "New York", "Other"]
-    st.selectbox(t["state_label"], options=us_states, disabled=disabled_mode, key="state_box")
+    selected_state = st.selectbox(t["state_label"], options=us_states, disabled=disabled_mode, key="state_box")
 
     st.header(t["calculator_header"])
-    st.number_input(t["income_input_label"], min_value=0.0, step=1000.0, disabled=disabled_mode, key="income_box")
-    st.metric(label=t["savings_label"], value=f"${st.session_state.estimated_savings:,.2f}")
+    income = st.number_input(t["income_input_label"], min_value=0.0, step=1000.0, disabled=disabled_mode, key="income_box")
+    
+    # 🧮 LIVE TAX SAVINGS PROGRESS ENGINE 
+    # Calculates a clean 25% tax projection for high-tax states, or 15% for zero/low-tax states
+    if selected_state in ["Texas", "Florida"]:
+        tax_rate = 0.15  # State has no individual income tax, calculates lower buffer
+    else:
+        tax_rate = 0.25  # Standard estimated state + federal tax savings target cushion
+        
+    calculated_savings = income * tax_rate
+    
+    st.metric(label=t["savings_label"], value=f"${calculated_savings:,.2f}")
     st.caption(t["peace_of_mind"])
 
     st.header(t["receipt_header"])
@@ -69,14 +76,14 @@ if not st.session_state.is_subscribed:
         st.write(t["paywall_text"])
         st.divider()
         
-        # 🧾 Clean Text Walkthrough instead of unpredictable web elements
+        # Text Walkthrough Tour card
         st.markdown(f"### {t['demo_title']}")
         st.markdown(t["step_1"])
         st.markdown(t["step_2"])
         st.markdown(t["step_3"])
         st.divider()
         
-        # Checkout Option Gateways (Using clean, unbreakable native layout buttons)
+        # Checkout Option Gateways
         st.markdown("### 🔒 Select a Gateway to Subscribe:")
         c1, c2 = st.columns(2)
         with c1:
