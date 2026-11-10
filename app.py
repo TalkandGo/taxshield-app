@@ -11,9 +11,8 @@ if "is_subscribed" not in st.session_state:
 # Replace this with your recurring $12.99 PayPal subscription billing link:
 PAYPAL_SUBSCRIPTION_URL = "https://paypal.com"  
 
-# 🎥 AUTOMATED DASHBOARD PREVIEW VIDEO (No upload required!)
-# This uses a high-quality, direct financial tracking animation loop
-PREVIEW_VIDEO_URL = "https://mixkit.co"  
+# 🎥 STABLE PREVIEW VIDEO LINK
+PREVIEW_VIDEO_URL = "https://w3schools.com"  
 
 # --- 3. MULTILINGUAL TRANSLATION DICTIONARY MAP ---
 translations = {
@@ -112,7 +111,7 @@ if not st.session_state.is_subscribed:
         
         # Video Walkthrough Embed
         st.write(t["video_caption"])
-        st.video(PREVIEW_VIDEO_URL)  # Embedded natively inside the box
+        st.video(PREVIEW_VIDEO_URL)  
         
         st.divider()
         
