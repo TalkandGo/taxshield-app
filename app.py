@@ -5,6 +5,7 @@ if "is_subscribed" not in st.session_state:
     st.session_state.is_subscribed = False
 
 # --- 2. CONFIGURABLE CHECKOUT PORTAL URLS ---
+# Replace these with your actual copied shareable product payment links:
 PAYPAL_SUBSCRIPTION_URL = "https://paypal.com"  
 STRIPE_SUBSCRIPTION_URL = "https://stripe.com"  
 
@@ -63,7 +64,6 @@ def render_dashboard(disabled_mode=False):
     income = st.number_input(t["income_input_label"], min_value=0.0, step=1000.0, disabled=disabled_mode, key="income_box")
     
     # 🧮 LIVE TAX SAVINGS PROGRESS ENGINE 
-    # States with no individual state income tax
     no_state_tax = ["Alaska", "Florida", "Nevada", "New Hampshire", "South Dakota", "Tennessee", "Texas", "Washington", "Wyoming"]
     
     if selected_state in no_state_tax:
@@ -109,13 +109,14 @@ if not st.session_state.is_subscribed:
         st.divider()
         
         # OWNER / BUYER UNLOCK BOX
-        code = st.text_input(t["activation_label"], placeholder="Type 'test' to unlock immediately as owner")
+        code = st.text_input(t["activation_label"], placeholder="Type a passcode to unlock...")
         if st.button(t["btn_activate"], type="primary"):
-            if code.strip() != "":
+            # 🔐 STRICT CODE VALIDATION: Change "securepass123" to your actual hidden passcode!
+            if code.strip() == "securepass123":
                 st.session_state.is_subscribed = True
                 st.rerun()
             else:
-                st.error("Please enter a valid passcode to unlock.")
+                st.error("Invalid passcode. Please try again.")
                 
     st.divider()
     st.info(t["preview_banner"])
