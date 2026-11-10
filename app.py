@@ -8,11 +8,9 @@ if "is_subscribed" not in st.session_state:
     st.session_state.is_subscribed = False
 
 # --- 2. CONFIGURABLE ECOSYSTEM GATEWAY URLS ---
-# Replace this with your recurring $12.99 PayPal subscription billing link:
+# Replace these with your live recurring $12.99 monthly subscription platform links:
 PAYPAL_SUBSCRIPTION_URL = "https://paypal.com"  
-
-# 🎥 STABLE PREVIEW VIDEO LINK
-PREVIEW_VIDEO_URL = "https://w3schools.com"  
+STRIPE_SUBSCRIPTION_URL = "https://stripe.com"  
 
 # --- 3. MULTILINGUAL TRANSLATION DICTIONARY MAP ---
 translations = {
@@ -30,14 +28,19 @@ translations = {
         "upload_label": "Snap / Upload Receipt Pic",
         
         "paywall_title": "🔒 KeepRest Dashboard Locked",
-        "paywall_text": "Subscribe monthly to unlock complete interactive access to the Income Calculator, Receipt Vault, and State Tax Saver Engine.",
-        "video_caption": "🎥 Take a look at the interactive engine features below:",
+        "paywall_text": "Get complete interactive access to your personal Income Calculator, secure Receipt Vault, and live State Tax Saver Engines.",
         "price_tag": "💳 Subscription: $12.99 / month",
-        "paypal_button_text": "🟡 Subscribe Now via PayPal",
-        "mock_verify_label": "Already subscribed? Paste your PayPal Subscription ID to unlock:",
+        "paypal_button_text": "🟡 Subscribe via PayPal",
+        "stripe_button_text": "💳 Subscribe via Stripe",
+        "mock_verify_label": "Already subscribed? Paste your Activation Code or Subscription ID to unlock:",
         "verify_button": "Unlock Dashboard",
         "invalid_code": "❌ Please enter a valid activation code to access the app.",
-        "preview_banner": "👀 PREVIEW MODE: Below is a read-only preview of what you get when you subscribe."
+        "preview_banner": "👀 PREVIEW MODE: Below is a read-only preview of what you get when you subscribe.",
+        
+        "feature_title": "🚀 What is included with your subscription:",
+        "feat_1": "✅ **Real-Time Income Tax Estimator** - See your progress instantly.",
+        "feat_2": "✅ **Secure Receipt Vault Engine** - Store and snap invoices seamlessly.",
+        "feat_3": "✅ **State-Specific Deductions** - Customized rules for US territories."
     },
     "Spanish": {
         "app_title": "Panel de Control KeepRest",
@@ -53,14 +56,19 @@ translations = {
         "upload_label": "Tomar / Subir Foto de Recibo",
         
         "paywall_title": "🔒 Panel de KeepRest Bloqueado",
-        "paywall_text": "Suscríbase mensualmente para desbloquear el acceso interactivo completo a la calculadora de ingresos, la bóveda de recibos y el motor de ahorro de impuestos estatales.",
-        "video_caption": "🎥 Eche un vistazo a las características del motor interactivo a continuación:",
+        "paywall_text": "Obtenga acceso interactivo completo a su calculadora de ingresos personal, bóveda de recibos segura y motores de ahorro de impuestos estatales en vivo.",
         "price_tag": "💳 Suscripción: $12.99 / mes",
-        "paypal_button_text": "🟡 Suscríbase ahora a través de PayPal",
-        "mock_verify_label": "¿Ya está suscrito? Pegue su ID de suscripción de PayPal o código de activación para desbloquear:",
+        "paypal_button_text": "🟡 Suscribirse con PayPal",
+        "stripe_button_text": "💳 Suscribirse con Stripe",
+        "mock_verify_label": "¿Ya está suscrito? Pegue su ID de suscripción o código de activación para desbloquear:",
         "verify_button": "Desbloquear Panel",
         "invalid_code": "❌ Ingrese un código de activación válido para acceder a la aplicación.",
-        "preview_banner": "👀 MODO DE VISTA PREVIA: A continuación se muestra una vista previa de solo lectura de lo que obtiene al suscribirse."
+        "preview_banner": "👀 MODO DE VISTA PREVIA: A continuación se muestra una vista previa de solo lectura de lo que obtiene al suscribirse.",
+        
+        "feature_title": "🚀 Qué incluye tu suscripción:",
+        "feat_1": "✅ **Estimador de impuestos en tiempo real** - Vea su progreso al instante.",
+        "feat_2": "✅ **Motor de bóveda de recibos seguro** - Guarde facturas sin problemas.",
+        "feat_3": "✅ **Deducciones específicas del estado** - Reglas personalizadas para EE. UU."
     }
 }
 
@@ -96,7 +104,7 @@ def render_dashboard(disabled_mode=False):
 
 # --- 6. CONDITIONAL GATEWAY ROUTING ---
 if not st.session_state.is_subscribed:
-    # --- SCREEN A: PAYWALL + VIDEO + APP PREVIEW ---
+    # --- SCREEN A: PAYWALL CONTENT PAGE ---
     st.title(t["app_title"])
     
     with st.container(border=True):
@@ -104,19 +112,25 @@ if not st.session_state.is_subscribed:
         st.write(t["paywall_text"])
         st.warning(t["price_tag"])
         
-        # PayPal Link
-        st.link_button(t["paypal_button_text"], PAYPAL_SUBSCRIPTION_URL, use_container_width=True)
+        # Payment Gateway Columns (Side-by-Side checkout buttons)
+        col1, col2 = st.columns(2)
+        with col1:
+            st.link_button(t["paypal_button_text"], PAYPAL_SUBSCRIPTION_URL, use_container_width=True)
+        with col2:
+            st.link_button(t["stripe_button_text"], STRIPE_SUBSCRIPTION_URL, use_container_width=True)
+            
+        st.divider()
+        
+        # Clean alternative to the video block: Bulleted visual showcase
+        st.markdown(f"### {t['feature_title']}")
+        st.markdown(t["feat_1"])
+        st.markdown(t["feat_2"])
+        st.markdown(t["feat_3"])
         
         st.divider()
         
-        # Video Walkthrough Embed
-        st.write(t["video_caption"])
-        st.video(PREVIEW_VIDEO_URL)  
-        
-        st.divider()
-        
-        # Unlock Mechanism
-        activation_code = st.text_input(t["mock_verify_label"], placeholder="e.g., I-XXXXXX")
+        # Unlock Panel Box
+        activation_code = st.text_input(t["mock_verify_label"], placeholder="e.g., Sub-12345")
         if st.button(t["verify_button"], type="primary"):
             if activation_code.strip() != "":
                 st.session_state.is_subscribed = True
@@ -129,7 +143,7 @@ if not st.session_state.is_subscribed:
     render_dashboard(disabled_mode=True)
 
 else:
-    # --- SCREEN B: FULLY UNLOCKED INTERACTIVE APPLICATION ---
+    # --- SCREEN B: UNLOCKED INTERACTIVE DASHBOARD ---
     st.title(t["app_title"])
     st.info(t["tax_reminder"])
     
