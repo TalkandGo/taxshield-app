@@ -4,12 +4,16 @@ import streamlit as st
 if "estimated_savings" not in st.session_state:
     st.session_state.estimated_savings = 0.0
 
-# --- 2. CONFIGURABLE ECOSYSTEM GATEWAY URLS ---
-# Replace this with your direct PayPal payment link or your paypal.me address:
-PAYPAL_PAYMENT_URL = "https://paypal.com"  
+if "is_subscribed" not in st.session_state:
+    st.session_state.is_subscribed = False
 
-# Leave this as None for now. Once you want to add Stripe later, just paste your ://stripe.com link here:
-STRIPE_PAYMENT_URL = None  
+# --- 2. CONFIGURABLE ECOSYSTEM GATEWAY URLS ---
+# Replace this with your recurring $12.99 PayPal subscription billing link:
+PAYPAL_SUBSCRIPTION_URL = "https://paypal.com"  
+
+# 🎥 AUTOMATED DASHBOARD PREVIEW VIDEO (No upload required!)
+# This uses a high-quality, direct financial tracking animation loop
+PREVIEW_VIDEO_URL = "https://mixkit.co"  
 
 # --- 3. MULTILINGUAL TRANSLATION DICTIONARY MAP ---
 translations = {
@@ -25,90 +29,113 @@ translations = {
         "receipt_header": "📂 Receipt Vault & Tax Saver Engine",
         "receipt_subtext": "Lose your receipts easily? Type the amount OR snap a picture below.",
         "upload_label": "Snap / Upload Receipt Pic",
-        "premium_sidebar_title": "💳 KeepRest Premium Account Portal",
-        "premium_sidebar_text": "Unlock automated matching receipt algorithms and live regional tax advisor tracking panels.",
-        "upgrade_button_label": "Upgrade to Premium Plans",
-        "premium_features_promo": "Get full corporate-grade automated tax deduction tracking for less than $10 a month.",
-        "paypal_button_text": "🟡 Complete Upgrade via PayPal",
-        "stripe_button_text": "💳 Complete Upgrade via Stripe"
+        
+        "paywall_title": "🔒 KeepRest Dashboard Locked",
+        "paywall_text": "Subscribe monthly to unlock complete interactive access to the Income Calculator, Receipt Vault, and State Tax Saver Engine.",
+        "video_caption": "🎥 Take a look at the interactive engine features below:",
+        "price_tag": "💳 Subscription: $12.99 / month",
+        "paypal_button_text": "🟡 Subscribe Now via PayPal",
+        "mock_verify_label": "Already subscribed? Paste your PayPal Subscription ID to unlock:",
+        "verify_button": "Unlock Dashboard",
+        "invalid_code": "❌ Please enter a valid activation code to access the app.",
+        "preview_banner": "👀 PREVIEW MODE: Below is a read-only preview of what you get when you subscribe."
     },
     "Spanish": {
         "app_title": "Panel de Control KeepRest",
-        "tax_reminder": "📢 RECORDATORIO AFABLE DE LA TEMPORADA DE IMPUESTOS: La época de impuestos está a la vuelta de la esquina. Organiza tus recibos.",
+        "tax_reminder": "📢 RECORDATORIO AFABLE DE TEMPORADA DE IMPUESTOS: La temporada de impuestos está a la vuelta de la esquina. Organice sus recibos para estar 100% preparado.",
         "settings_header": "⚙️ Configuración",
-        "state_label": "Seleccione su Estado de EE.UU.",
+        "state_label": "Seleccione su Estado de EE. UU.",
         "calculator_header": "💰 Calculadora de Ingresos",
         "income_input_label": "Ingrese su Nuevo Monto de Ingresos ($)",
-        "savings_label": "Progreso de Ahorros Fiscales Estimados",
-        "peace_of_mind": "✨ Tus datos financieros están rastreados de forma segura para tu tranquilidad.",
-        "receipt_header": "📂 Bóveda de Recibos y Motor de Ahorro",
-        "receipt_subtext": "¿Pierdes tus recibos fácilmente? Escribe el monto O toma una foto abajo.",
+        "savings_label": "Progreso Estimado de Ahorro de Impuestos",
+        "peace_of_mind": "✨ Sus datos financieros se rastrean de forma segura para su absoluta tranquilidad.",
+        "receipt_header": "📂 Bóveda de Recibos y Motor de Ahorro Fiscal",
+        "receipt_subtext": "¿Pierde sus recibos fácilmente? Escriba el monto o tome una foto a continuación.",
         "upload_label": "Tomar / Subir Foto de Recibo",
-        "premium_sidebar_title": "💳 Portal de Cuenta Premium KeepRest",
-        "premium_sidebar_text": "Desbloquea algoritmos automáticos de emparejamiento de recibos y paneles de asesores fiscales.",
-        "upgrade_button_label": "Actualizar a Planes Premium",
-        "premium_features_promo": "Obtén seguimiento fiscal corporativo automatizado por menos de $10 al mes.",
-        "paypal_button_text": "🟡 Completar Pago con PayPal",
-        "stripe_button_text": "💳 Completar Pago con Stripe"
+        
+        "paywall_title": "🔒 Panel de KeepRest Bloqueado",
+        "paywall_text": "Suscríbase mensualmente para desbloquear el acceso interactivo completo a la calculadora de ingresos, la bóveda de recibos y el motor de ahorro de impuestos estatales.",
+        "video_caption": "🎥 Eche un vistazo a las características del motor interactivo a continuación:",
+        "price_tag": "💳 Suscripción: $12.99 / mes",
+        "paypal_button_text": "🟡 Suscríbase ahora a través de PayPal",
+        "mock_verify_label": "¿Ya está suscrito? Pegue su ID de suscripción de PayPal o código de activación para desbloquear:",
+        "verify_button": "Desbloquear Panel",
+        "invalid_code": "❌ Ingrese un código de activación válido para acceder a la aplicación.",
+        "preview_banner": "👀 MODO DE VISTA PREVIA: A continuación se muestra una vista previa de solo lectura de lo que obtiene al suscribirse."
     }
 }
 
-# --- 4. LANGUAGE PICKER DROPDOWN CONFIGURATION ---
-selected_language = st.selectbox("Choose Language / Idioma / 语言 /  भाषा", list(translations.keys()))
-lang = translations[selected_language]
+# --- 4. LANGUAGE SELECTOR & LANGUAGE STATE ---
+if "language" not in st.session_state:
+    st.session_state.language = "English"
 
-st.title(lang["app_title"])
+st.sidebar.markdown("### 🌐 Language / Idioma")
+selected_lang = st.sidebar.selectbox(
+    "Choose Language / Seleccione el idioma", 
+    options=["English", "Spanish"],
+    index=0 if st.session_state.language == "English" else 1
+)
+st.session_state.language = selected_lang
+t = translations[st.session_state.language]
 
-# --- 5. APP REMINDER BANNER ---
-st.info(lang["tax_reminder"])
 
-# --- 6. MAIN MAIN INTERFACE SETTINGS SECTION ---
-st.subheader(lang["settings_header"])
-selected_state = st.selectbox(lang["state_label"], ["California", "New York", "Texas", "Florida", "North Carolina"])
+# --- 5. THE CONTENT RENDERING ENGINE ---
+def render_dashboard(disabled_mode=False):
+    st.header(t["settings_header"])
+    us_states = ["California", "Texas", "Florida", "New York", "Other"]
+    st.selectbox(t["state_label"], options=us_states, disabled=disabled_mode, key="state_box")
 
-# --- 7. TAX ENGINE INCOME CALCULATOR SECTION ---
-st.subheader(lang["calculator_header"])
-income_amount = st.number_input(lang["income_input_label"], min_value=0.0, step=100.0, value=0.0)
+    st.header(t["calculator_header"])
+    st.number_input(t["income_input_label"], min_value=0.0, step=1000.0, disabled=disabled_mode, key="income_box")
+    st.metric(label=t["savings_label"], value=f"${st.session_state.estimated_savings:,.2f}")
+    st.caption(t["peace_of_mind"])
 
-if income_amount > 0:
-    st.session_state.estimated_savings = income_amount * 0.15
-else:
-    st.session_state.estimated_savings = 0.0
+    st.header(t["receipt_header"])
+    st.write(t["receipt_subtext"])
+    st.file_uploader(t["upload_label"], type=["png", "jpg", "jpeg"], disabled=disabled_mode, key="vault_box")
 
-st.metric(label=lang["savings_label"], value=f"${st.session_state.estimated_savings:,.2f}")
-st.markdown(lang["peace_of_mind"])
 
-# --- 8. FILE MANAGEMENT RECEIPT VAULT LOADING BLOCKS ---
-st.subheader(lang["receipt_header"])
-st.write(lang["receipt_subtext"])
-uploaded_pic = st.file_uploader(lang["upload_label"], type=["jpg", "jpeg", "png"])
-
-if uploaded_pic is not None:
-    st.success("File uploaded successfully!")
-
-# --- 9. GLOBAL CONVERSION PREMIUM SIDEBAR SUBSCRIPTION DRAWER ---
-with st.sidebar:
-    st.header(lang["premium_sidebar_title"])
-    st.write(lang["premium_sidebar_text"])
-    st.divider()
+# --- 6. CONDITIONAL GATEWAY ROUTING ---
+if not st.session_state.is_subscribed:
+    # --- SCREEN A: PAYWALL + VIDEO + APP PREVIEW ---
+    st.title(t["app_title"])
     
-    with st.expander(f"⚙️ {lang['upgrade_button_label']}", expanded=True):
-        st.warning(lang["premium_features_promo"])
+    with st.container(border=True):
+        st.subheader(t["paywall_title"])
+        st.write(t["paywall_text"])
+        st.warning(t["price_tag"])
         
-        # Primary Action Option 1: Live PayPal Checkout Gateway
-        st.link_button(
-            label=lang["paypal_button_text"],
-            url=PAYPAL_PAYMENT_URL,
-            type="primary",
-            use_container_width=True
-        )
+        # PayPal Link
+        st.link_button(t["paypal_button_text"], PAYPAL_SUBSCRIPTION_URL, use_container_width=True)
         
-        # Primary Action Option 2: Stripe Checkout Gateway (Loads only when link is provided above)
-        if STRIPE_PAYMENT_URL:
-            st.divider()
-            st.link_button(
-                label=lang["stripe_button_text"],
-                url=STRIPE_PAYMENT_URL,
-                type="secondary",
-                use_container_width=True
-            )
+        st.divider()
+        
+        # Video Walkthrough Embed
+        st.write(t["video_caption"])
+        st.video(PREVIEW_VIDEO_URL)  # Embedded natively inside the box
+        
+        st.divider()
+        
+        # Unlock Mechanism
+        activation_code = st.text_input(t["mock_verify_label"], placeholder="e.g., I-XXXXXX")
+        if st.button(t["verify_button"], type="primary"):
+            if activation_code.strip() != "":
+                st.session_state.is_subscribed = True
+                st.rerun()
+            else:
+                st.error(t["invalid_code"])
+                
+    st.divider()
+    st.info(t["preview_banner"])
+    render_dashboard(disabled_mode=True)
+
+else:
+    # --- SCREEN B: FULLY UNLOCKED INTERACTIVE APPLICATION ---
+    st.title(t["app_title"])
+    st.info(t["tax_reminder"])
+    
+    if st.sidebar.button("Log Out / Lock App"):
+        st.session_state.is_subscribed = False
+        st.rerun()
+        
+    render_dashboard(disabled_mode=False)
