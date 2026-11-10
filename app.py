@@ -5,7 +5,6 @@ if "is_subscribed" not in st.session_state:
     st.session_state.is_subscribed = False
 
 # --- 2. CONFIGURABLE CHECKOUT PORTAL URLS ---
-# Replace these with your actual copied shareable product payment links:
 PAYPAL_SUBSCRIPTION_URL = "https://paypal.com"  
 STRIPE_SUBSCRIPTION_URL = "https://stripe.com"  
 
@@ -43,18 +42,34 @@ t = translations["English"]
 # --- 4. THE CONTENT RENDERING ENGINE ---
 def render_dashboard(disabled_mode=False):
     st.header(t["settings_header"])
-    us_states = ["California", "Texas", "Florida", "New York", "Other"]
+    
+    # 🇺🇸 COMPLETE 50 US STATES LIST
+    us_states = [
+        "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", 
+        "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", 
+        "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", 
+        "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", 
+        "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", 
+        "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", 
+        "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", 
+        "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", 
+        "Utah", "Vermont", "Virginia", "Washington", "West Virginia", 
+        "Wisconsin", "Wyoming", "Other"
+    ]
+    
     selected_state = st.selectbox(t["state_label"], options=us_states, disabled=disabled_mode, key="state_box")
 
     st.header(t["calculator_header"])
     income = st.number_input(t["income_input_label"], min_value=0.0, step=1000.0, disabled=disabled_mode, key="income_box")
     
     # 🧮 LIVE TAX SAVINGS PROGRESS ENGINE 
-    # Calculates a clean 25% tax projection for high-tax states, or 15% for zero/low-tax states
-    if selected_state in ["Texas", "Florida"]:
-        tax_rate = 0.15  # State has no individual income tax, calculates lower buffer
+    # States with no individual state income tax
+    no_state_tax = ["Alaska", "Florida", "Nevada", "New Hampshire", "South Dakota", "Tennessee", "Texas", "Washington", "Wyoming"]
+    
+    if selected_state in no_state_tax:
+        tax_rate = 0.15  # Lower tax rate projection buffer for states without income tax
     else:
-        tax_rate = 0.25  # Standard estimated state + federal tax savings target cushion
+        tax_rate = 0.25  # Standard combined state + federal tax savings target cushion
         
     calculated_savings = income * tax_rate
     
