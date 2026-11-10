@@ -5,7 +5,7 @@ if "is_subscribed" not in st.session_state:
     st.session_state.is_subscribed = False
 
 # --- 2. CONFIGURABLE CHECKOUT PORTAL URLS ---
-# Replace these with your actual copied shareable product payment links:
+# 🟡 PASTE YOUR COPIED RECURRING PLAN URL HERE:
 PAYPAL_SUBSCRIPTION_URL = "https://paypal.com"  
 STRIPE_SUBSCRIPTION_URL = "https://stripe.com"  
 
@@ -67,13 +67,27 @@ def render_dashboard(disabled_mode=False):
     no_state_tax = ["Alaska", "Florida", "Nevada", "New Hampshire", "South Dakota", "Tennessee", "Texas", "Washington", "Wyoming"]
     
     if selected_state in no_state_tax:
-        tax_rate = 0.15  # Lower tax rate projection buffer for states without income tax
+        tax_rate = 0.15  # 15% buffer
     else:
-        tax_rate = 0.25  # Standard combined state + federal tax savings target cushion
+        tax_rate = 0.25  # 25% cushion
         
     calculated_savings = income * tax_rate
+    net_income = income - calculated_savings
     
-    st.metric(label=t["savings_label"], value=f"${calculated_savings:,.2f}")
+    # Visual Breakdown Table Metrics
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric(label=t["savings_label"], value=f"${calculated_savings:,.2f}")
+    with col2:
+        st.metric(label="Net Income Post-Tax", value=f"${net_income:,.2f}")
+        
+    # Render Data Matrix Summary Table
+    st.markdown("### 📊 Live Financial Overview")
+    st.table({
+        "Financial Metric": ["Gross Revenue Listed", "Calculated Tax Rate", "Total Reserved Taxes", "Remaining Net Balance"],
+        "Value Amount": [f"${income:,.2f}", f"{tax_rate*100:.0f}%", f"${calculated_savings:,.2f}", f"${net_income:,.2f}"]
+    })
+    
     st.caption(t["peace_of_mind"])
 
     st.header(t["receipt_header"])
@@ -111,7 +125,6 @@ if not st.session_state.is_subscribed:
         # OWNER / BUYER UNLOCK BOX
         code = st.text_input(t["activation_label"], placeholder="Type a passcode to unlock...")
         if st.button(t["btn_activate"], type="primary"):
-            # 🔐 STRICT CODE VALIDATION: Change "securepass123" to your actual hidden passcode!
             if code.strip() == "securepass123":
                 st.session_state.is_subscribed = True
                 st.rerun()
