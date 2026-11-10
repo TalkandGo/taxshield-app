@@ -1,16 +1,50 @@
 import streamlit as st
+import streamlit.components.v1 as components
 
-# --- 1. INITIALIZE GLOBAL APPS SESSION STATE ---
-if "estimated_savings" not in st.session_state:
-    st.session_state.estimated_savings = 0.0
+# --- 1. INITIALIZE GLOBAL SECURITY STATE ---
+if "user_account" not in st.session_state:
+    st.session_state.user_account = None  
 
 if "is_subscribed" not in st.session_state:
     st.session_state.is_subscribed = False
 
-# --- 2. CONFIGURABLE ECOSYSTEM GATEWAY URLS ---
-# Replace these with your live recurring $12.99 monthly subscription platform links:
-PAYPAL_SUBSCRIPTION_URL = "https://paypal.com"  
+if "estimated_savings" not in st.session_state:
+    st.session_state.estimated_savings = 0.0
+
+if "mock_db" not in st.session_state:
+    st.session_state.mock_db = {
+        "admin": {"password": "test", "subscribed": True}  
+    }
+
+# --- 2. CONFIGURABLE CHECKOUT PORTAL URLS ---
+# Keep your Stripe link ready here:
 STRIPE_SUBSCRIPTION_URL = "https://stripe.com"  
+
+# Raw embedded HTML/JS script block directly from your PayPal account setup
+PAYPAL_BUTTON_HTML = """
+<div style="text-align: center;">
+    <div id="paypal-button-container-P-0CH31499JV265374YNLZJYJI"></div>
+</div>
+<script src="https://www.paypal.com/sdk/js?client-id=BAAml6BpucJg0E0-58er11J8OgtxjV6rsvnvNF9931T_kJB58I72D3-mLzUiiTeBlaaI0bxbMndV832MQc&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
+<script>
+  paypal.Buttons({
+      style: {
+          shape: 'rect',
+          color: 'gold',
+          layout: 'vertical',
+          label: 'subscribe'
+      },
+      createSubscription: function(data, actions) {
+        return actions.subscription.create({
+          plan_id: 'P-0CH31499JV265374YNLZJYJI'
+        });
+      },
+      onApprove: function(data, actions) {
+        alert("Subscription Approved! ID: " + data.subscriptionID); 
+      }
+  }).render('#paypal-button-container-P-0CH31499JV265374YNLZJYJI');
+</script>
+"""
 
 # --- 3. MULTILINGUAL TRANSLATION DICTIONARY MAP ---
 translations = {
@@ -27,24 +61,25 @@ translations = {
         "receipt_subtext": "Lose your receipts easily? Type the amount OR snap a picture below.",
         "upload_label": "Snap / Upload Receipt Pic",
         
-        "paywall_title": "🔒 KeepRest Dashboard Locked",
-        "paywall_text": "Get complete interactive access to your personal Income Calculator, secure Receipt Vault, and live State Tax Saver Engines.",
-        "price_tag": "💳 Subscription: $12.99 / month",
-        "paypal_button_text": "🟡 Subscribe via PayPal",
-        "stripe_button_text": "💳 Subscribe via Stripe",
-        "mock_verify_label": "Already subscribed? Paste your Activation Code or Subscription ID to unlock:",
-        "verify_button": "Unlock Dashboard",
-        "invalid_code": "❌ Please enter a valid activation code to access the app.",
-        "preview_banner": "👀 PREVIEW MODE: Below is a read-only preview of what you get when you subscribe.",
+        "auth_header": "🔐 KeepRest Secure Portal",
+        "login_tab": "Sign In",
+        "signup_tab": "Create Account",
+        "username_label": "Email or Username",
+        "password_label": "Password",
+        "btn_login": "Log In",
+        "btn_signup": "Register & Setup Billing",
         
-        "feature_title": "🚀 What is included with your subscription:",
-        "feat_1": "✅ **Real-Time Income Tax Estimator** - See your progress instantly.",
-        "feat_2": "✅ **Secure Receipt Vault Engine** - Store and snap invoices seamlessly.",
-        "feat_3": "✅ **State-Specific Deductions** - Customized rules for US territories."
+        "paywall_title": "💳 Subscription Required ($12.99/mo)",
+        "paywall_text": "Account created! To activate your interactive Income Calculator & Receipt Vault, complete payment below:",
+        "stripe_button_text": "💳 Subscribe via Stripe",
+        "activation_label": "Once paid, enter your Subscription ID or Receipt Code to activate:",
+        "btn_activate": "Activate Account & Unlock App",
+        "welcome_user": "Welcome back",
+        "logout_label": "Secure Log Out"
     },
     "Spanish": {
         "app_title": "Panel de Control KeepRest",
-        "tax_reminder": "📢 RECORDATORIO AFABLE DE TEMPORADA DE IMPUESTOS: La temporada de impuestos está a la vuelta de la esquina. Organice sus recibos para estar 100% preparado.",
+        "tax_reminder": "📢 RECORDATORIO DE TEMPORADA DE IMPUESTOS...",
         "settings_header": "⚙️ Configuración",
         "state_label": "Seleccione su Estado de EE. UU.",
         "calculator_header": "💰 Calculadora de Ingresos",
@@ -52,34 +87,34 @@ translations = {
         "savings_label": "Progreso Estimado de Ahorro de Impuestos",
         "peace_of_mind": "✨ Sus datos financieros se rastrean de forma segura para su absoluta tranquilidad.",
         "receipt_header": "📂 Bóveda de Recibos y Motor de Ahorro Fiscal",
-        "receipt_subtext": "¿Pierde sus recibos fácilmente? Escriba el monto o tome una foto a continuación.",
+        "receipt_subtext": "¿Pierde sus recibos fácilmente?...",
         "upload_label": "Tomar / Subir Foto de Recibo",
         
-        "paywall_title": "🔒 Panel de KeepRest Bloqueado",
-        "paywall_text": "Obtenga acceso interactivo completo a su calculadora de ingresos personal, bóveda de recibos segura y motores de ahorro de impuestos estatales en vivo.",
-        "price_tag": "💳 Suscripción: $12.99 / mes",
-        "paypal_button_text": "🟡 Suscribirse con PayPal",
-        "stripe_button_text": "💳 Suscribirse con Stripe",
-        "mock_verify_label": "¿Ya está suscrito? Pegue su ID de suscripción o código de activación para desbloquear:",
-        "verify_button": "Desbloquear Panel",
-        "invalid_code": "❌ Ingrese un código de activación válido para acceder a la aplicación.",
-        "preview_banner": "👀 MODO DE VISTA PREVIA: A continuación se muestra una vista previa de solo lectura de lo que obtiene al suscribirse.",
+        "auth_header": "🔐 Portal Seguro KeepRest",
+        "login_tab": "Iniciar Sesión",
+        "signup_tab": "Crear Cuenta",
+        "username_label": "Correo o Usuario",
+        "password_label": "Contraseña",
+        "btn_login": "Iniciar Sesión",
+        "btn_signup": "Registrarse y Configurar Facturación",
         
-        "feature_title": "🚀 Qué incluye tu suscripción:",
-        "feat_1": "✅ **Estimador de impuestos en tiempo real** - Vea su progreso al instante.",
-        "feat_2": "✅ **Motor de bóveda de recibos seguro** - Guarde facturas sin problemas.",
-        "feat_3": "✅ **Deducciones específicas del estado** - Reglas personalizadas para EE. UU."
+        "paywall_title": "💳 Suscripción Requerida ($12.99/mes)",
+        "paywall_text": "¡Cuenta creada! Para activar su panel interactivo, complete su pago a continuación:",
+        "stripe_button_text": "💳 Suscribirse con Stripe",
+        "activation_label": "Una vez pagado, ingrese su ID de suscripción para activar:",
+        "btn_activate": "Activar Cuenta y Desbloquear",
+        "welcome_user": "Bienvenido",
+        "logout_label": "Cerrar Sesión Seguro"
     }
 }
 
-# --- 4. LANGUAGE SELECTOR & LANGUAGE STATE ---
+# --- 4. LANGUAGE SELECTOR ---
 if "language" not in st.session_state:
     st.session_state.language = "English"
 
 st.sidebar.markdown("### 🌐 Language / Idioma")
 selected_lang = st.sidebar.selectbox(
-    "Choose Language / Seleccione el idioma", 
-    options=["English", "Spanish"],
+    "Choose Language", options=["English", "Spanish"],
     index=0 if st.session_state.language == "English" else 1
 )
 st.session_state.language = selected_lang
@@ -102,52 +137,89 @@ def render_dashboard(disabled_mode=False):
     st.file_uploader(t["upload_label"], type=["png", "jpg", "jpeg"], disabled=disabled_mode, key="vault_box")
 
 
-# --- 6. CONDITIONAL GATEWAY ROUTING ---
-if not st.session_state.is_subscribed:
-    # --- SCREEN A: PAYWALL CONTENT PAGE ---
-    st.title(t["app_title"])
-    
+# --- 6. USER INTERFACE USER ROUTING ---
+st.title(t["app_title"])
+
+if st.session_state.user_account is None:
+    # --- FLOW A: NOT SIGNED IN ---
+    with st.container(border=True):
+        st.subheader(t["auth_header"])
+        tab1, tab2 = st.tabs([t["login_tab"], t["signup_tab"]])
+        
+        with tab1:
+            username = st.text_input(t["username_label"], key="login_user")
+            password = st.text_input(t["password_label"], type="password", key="login_pass")
+            if st.button(t["btn_login"], type="primary"):
+                if username in st.session_state.mock_db and st.session_state.mock_db[username]["password"] == password:
+                    st.session_state.user_account = username
+                    st.session_state.is_subscribed = st.session_state.mock_db[username]["subscribed"]
+                    st.success(f"Logged in as {username}!")
+                    st.rerun()
+                else:
+                    st.error("Invalid username or password.")
+        
+        with tab2:
+            new_user = st.text_input(t["username_label"], key="reg_user")
+            new_pass = st.text_input(t["password_label"], type="password", key="reg_pass")
+            if st.button(t["btn_signup"]):
+                if new_user.strip() == "" or new_pass.strip() == "":
+                    st.error("Fields cannot be empty.")
+                elif new_user in st.session_state.mock_db:
+                    st.error("Account already exists.")
+                else:
+                    st.session_state.mock_db[new_user] = {"password": new_pass, "subscribed": False}
+                    st.session_state.user_account = new_user
+                    st.session_state.is_subscribed = False
+                    st.success("Account registered! Please complete payment status below.")
+                    st.rerun()
+                    
+    st.divider()
+    render_dashboard(disabled_mode=True)
+
+elif st.session_state.user_account and not st.session_state.is_subscribed:
+    # --- FLOW B: SIGNED IN BUT UNPAID ---
     with st.container(border=True):
         st.subheader(t["paywall_title"])
         st.write(t["paywall_text"])
-        st.warning(t["price_tag"])
         
-        # Payment Gateway Columns (Side-by-Side checkout buttons)
-        col1, col2 = st.columns(2)
-        with col1:
-            st.link_button(t["paypal_button_text"], PAYPAL_SUBSCRIPTION_URL, use_container_width=True)
-        with col2:
+        # Payment Gateway Columns
+        c1, c2 = st.columns(2)
+        with c1:
+            # Renders your live PayPal Smart button script directly into the layout column
+            components.html(PAYPAL_BUTTON_HTML, height=200, scrolling=False)
+        with c2:
+            # Direct Stripe Link Button
+            st.write("")  # Alignment spacing cushion
+            st.write("")
             st.link_button(t["stripe_button_text"], STRIPE_SUBSCRIPTION_URL, use_container_width=True)
             
         st.divider()
         
-        # Clean alternative to the video block: Bulleted visual showcase
-        st.markdown(f"### {t['feature_title']}")
-        st.markdown(t["feat_1"])
-        st.markdown(t["feat_2"])
-        st.markdown(t["feat_3"])
-        
-        st.divider()
-        
-        # Unlock Panel Box
-        activation_code = st.text_input(t["mock_verify_label"], placeholder="e.g., Sub-12345")
-        if st.button(t["verify_button"], type="primary"):
-            if activation_code.strip() != "":
+        code = st.text_input(t["activation_label"], placeholder="e.g., P-0CH31499...")
+        if st.button(t["btn_activate"], type="primary"):
+            if code.strip() != "":
                 st.session_state.is_subscribed = True
+                st.session_state.mock_db[st.session_state.user_account]["subscribed"] = True
+                st.success("Subscription verified successfully!")
                 st.rerun()
             else:
-                st.error(t["invalid_code"])
+                st.error("Please provide your confirmation code.")
                 
+    if st.sidebar.button(t["logout_label"]):
+        st.session_state.user_account = None
+        st.session_state.is_subscribed = False
+        st.rerun()
+        
     st.divider()
-    st.info(t["preview_banner"])
     render_dashboard(disabled_mode=True)
 
 else:
-    # --- SCREEN B: UNLOCKED INTERACTIVE DASHBOARD ---
-    st.title(t["app_title"])
+    # --- FLOW C: SIGNED IN & FULLY SUBSCRIBED ---
+    st.sidebar.markdown(f"👤 **{t['welcome_user']}, {st.session_state.user_account}!**")
     st.info(t["tax_reminder"])
     
-    if st.sidebar.button("Log Out / Lock App"):
+    if st.sidebar.button(t["logout_label"]):
+        st.session_state.user_account = None
         st.session_state.is_subscribed = False
         st.rerun()
         
