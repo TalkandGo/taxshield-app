@@ -46,6 +46,7 @@ if (expense_amt > 0 or receipt_file) and st.button("📁 Save to Receipt Vault")
     st.session_state.estimated_savings += ((expense_amt if expense_amt > 0 else 50.00) * 0.15)
     st.success("Receipt safely saved in your vault! Keeping records lowers your final tax bill.")
 
+
 st.markdown("---")
 st.markdown("### 🔒 Your Tax & Savings Ledger Balance")
 col1, col2 = st.columns(2)
