@@ -2,13 +2,108 @@ import streamlit as st
 
 st.set_page_config(page_title="KeepRest", page_icon="🛡️", layout="centered")
 
-# --- 5 COMPACT LANGUAGES DICTIONARY ---
+# --- 5 COMPACT LANGUAGES DICTIONARY (CLEAN TRACKER ONLY) ---
 translations = {
-    "English": {"title": "KeepRest", "caption": "Relax. Your tax is handled. Focus on growing your business.", "settings_hdr": "⚙️ Settings", "state_lbl": "Select Your US State", "mode_lbl": "Tax Pull Preference", "mode_ask": "Ask me first before moving money", "mode_auto": "Automatically move it", "income_hdr": "💰 New Income Arrived", "income_lbl": "Enter Income Amount ($) or Upload Paycheck Image", "tax_aside": "Tax to set aside", "safe_spend": "Guilt-free money to spend:", "btn_auto": "✅ Process & Log Income", "btn_ask": "🛡️ Move money to Tax Vault Now", "success_auto": "Transferred money directly to your Tax Vault!", "success_ask": "Successfully protected money for tax time!", "vault_hdr": "🔒 Protected Tax Vault", "vault_metric": "Total Saved for Tax Time", "peace_of_mind": "🟢 **Your tax bills are covered.** Whatever is left in your main account is **100% yours to spend or reinvest.**", "expense_hdr": "📁 Receipt & Expense Vault (Tax Write-Offs)", "expense_lbl": "Snap or Upload Receipt to Lower Your Taxes", "expense_logged": "Logged Expense Amount ($)", "expense_success": "Receipt saved! This lowers your upcoming tax liability.", "total_writeoffs": "Total Tax Write-Offs Tracked"},
-    "Español": {"title": "KeepRest", "caption": "Relájate. Tus impuestos están bajo control. Enfócate en tu negocio.", "settings_hdr": "⚙️ Configuración", "state_lbl": "Selecciona tu Estado de EE. UU.", "mode_lbl": "Preferencia de Retiro", "mode_ask": "Preguntarme antes de mover el dinero", "mode_auto": "Mover automáticamente", "income_hdr": "💰 Nuevos Ingresos Recibidos", "income_lbl": "Ingresa el Monto ($) o sube foto del cheque", "tax_aside": "Impuesto a reservar", "safe_spend": "Dinero libre de culpa para gastar:", "btn_auto": "✅ Procesar y Registrar Ingreso", "btn_ask": "🛡️ Mover dinero a la Bóveda de Impuestos", "success_auto": "¡Dinero transferido directamente a tu Bóveda de Impuestos!", "success_ask": "¡Dinero protegido con éxito para la temporada de impuestos!", "vault_hdr": "🔒 Bóveda de Impuestos Protegida", "vault_metric": "Total Ahorrado para Impuestos", "peace_of_mind": "🟢 **Tus impuestos están cubiertos.** Lo que quede en tu cuenta principal es **100% tuyo para gastar o reinvertir.**", "expense_hdr": "📁 Bóveda de Recibos y Gastos (Deducciones)", "expense_lbl": "Toma foto o sube un Recibo para bajar tus Impuestos", "expense_logged": "Monto del Gasto Registrado ($)", "expense_success": "¡Recibo guardado! Esto reduce lo que debes pagar en impuestos.", "total_writeoffs": "Total de Deducciones Registradas"},
-    "简体中文": {"title": "KeepRest", "caption": "放轻松。税款已为您留存。专心发展您的业务即可。", "settings_hdr": "⚙️ 设置", "state_lbl": "选择您所在的美国联邦州", "mode_lbl": "税款提取偏好", "mode_ask": "转账前先询问我", "mode_auto": "自动直接转账", "income_hdr": "💰 新收入入账", "income_lbl": "输入收入金额 ($) 或上传支票照片", "tax_aside": "需留存的税款", "safe_spend": "您可以放心消费的金额：", "btn_auto": "✅ 处理并记录收入", "btn_ask": "🛡️ 立即将税款移至税务保险库", "success_auto": "已将税款直接转入您的税务保险库！", "success_ask": "已成功为您留存税期所需的资金！", "vault_hdr": "🔒 受保护的税务保险库", "vault_metric": "税务准备金总额", "peace_of_mind": "🟢 **您的税款已妥善留存。** 留在您主账户中的资金 **100% 属于您，可自由消费或再投资。**", "expense_hdr": "📁 收据与报销保险库（抵税项目）", "expense_lbl": "拍摄或上传收据以减少您的应纳税额", "expense_logged": "已记录的费用金额 ($)", "expense_success": "收据已保存！这将降低您接下来的预估税款。", "total_writeoffs": "已记录的抵税总额"},
-    "Français": {"title": "KeepRest", "caption": "Détendez-vous. Vos impôts sont gérés. Concentrez-vous sur votre entreprise.", "settings_hdr": "⚙️ Paramètres", "state_lbl": "Sélectionnez votre État américain", "mode_lbl": "Préférence de Prélèvement", "mode_ask": "Me demander avant de déplacer l'argent", "mode_auto": "Déplacer automatiquement", "income_hdr": "💰 Nouveau Revenu Reçu", "income_lbl": "Entrez le Montant ($) ou photographiez le chèque", "tax_aside": "Impôt à mettre de côté", "safe_spend": "Argent que vous pouvez dépenser l'esprit tranquille :", "btn_auto": "✅ Traiter et Enregistrer le Revenu", "btn_ask": "🛡️ Déplacer l'argent vers le Coffre Fiscal maintenant", "success_auto": "Argent transféré directement dans votre Coffre Fiscal !", "success_ask": "Argent sécurisé avec succès pour la période des impôts !", "vault_hdr": "🔒 Coffre Fiscal Sécurisé", "vault_metric": "Total Économisé pour les Impôts", "peace_of_mind": "🟢 **Vos impôts sont couverts.** Ce qui reste sur votre compte principal est **100% à vous pour dépenser ou réinvestir.**", "expense_hdr": "📁 Coffre de Reçus & Dépenses (Déductions)", "expense_lbl": "Prenez ou importez un reçu pour réduire vos impôts", "expense_logged": "Montant de la dépense enregistrée ($)", "expense_success": "Reçu sauvegardé ! Cela réduit votre future dette fiscale.", "total_writeoffs": "Total des Déductions Suivies"},
-    "Tiếng Việt": {"title": "KeepRest", "caption": "Thư giãn đi. Thuế của bạn đã được xử lý. Hãy tập trung phát triển kinh doanh.", "settings_hdr": "⚙️ Cài đặt", "state_lbl": "Chọn Bang tại Mỹ của Bạn", "mode_lbl": "Tùy chọn Trích thuế", "mode_ask": "Hỏi tôi trước khi chuyển tiền", "mode_auto": "Tự động trích tiền", "income_hdr": "💰 Doanh thu Mới Nhận", "income_lbl": "Nhập Số tiền Doanh thu ($) hoặc Chụp ảnh Phiếu lương", "tax_aside": "Tiền thuế cần trích ra", "safe_spend": "Số tiền bạn có thể thoải mái chi tiêu:", "btn_auto": "✅ Xử lý & Ghi nhận Doanh thu", "btn_ask": "🛡️ Chuyển tiền vào Két thuế Ngay", "success_auto": "Đã chuyển tiền trực tiếp vào Két thuế của bạn!", "success_ask": "Đã bảo vệ thành công số tiền cho mùa thuế sắp tới!", "vault_hdr": "🔒 Két Thuế Được Bảo Vệ", "vault_metric": "Tổng Tiền Tiết kiệm Cho Mùa Thuế", "peace_of_mind": "🟢 **Các hóa đơn thuế đã được lo liệu.** Số tiền còn lại trong tài khoản chính là **100% của bạn để chi tiêu hoặc tái đầu tư.**", "expense_hdr": "📁 Két Lưu Trữ Hóa Đơn & Chi Phí (Khấu Trừ Thuế)", "expense_lbl": "Chụp hình hoặc Tải lên Hóa đơn để Giảm Thuế Phải Trả", "expense_logged": "Số tiền Chi phí Đã Ghi Nhận ($)", "expense_success": "Đã lưu hóa đơn! Chi phí này sẽ giúp hạ thấp nghĩa vụ thuế của bạn.", "total_writeoffs": "Tổng Chi Phí Khấu Trừ Đã Theo Dõi"}
+    "English": {
+        "title": "KeepRest", 
+        "caption": "Relax. Your tax is handled. Focus on growing your business.", 
+        "settings_hdr": "⚙️ Settings", 
+        "state_lbl": "Select Your US State", 
+        "income_hdr": "💰 Income Calculator", 
+        "income_lbl": "Enter Your New Income Amount ($)", 
+        "tax_aside": "Tax to set aside in your private bank account", 
+        "safe_spend": "Guilt-free money left over to spend:", 
+        "expense_hdr": "📁 Receipt Vault & Tax Saver Estimator", 
+        "expense_lbl": "💡 Lose your receipts easily? Type the amount OR snap a picture below to securely store it for tax time!", 
+        "expense_logged": "Enter Receipt Total ($) - Optional if uploading image", 
+        "btn_log": "📁 Save to Receipt Vault & Estimate Savings",
+        "expense_success": "Receipt safely saved in your vault! Keeping records lowers your final tax bill.", 
+        "reminder_banner": "⏰ **FRIENDLY TAX SEASON REMINDER:** Tax time is getting close! Keep saving and logging your write-offs so you are 100% prepared.",
+        "vault_hdr": "🔒 Your Tax & Savings Ledger Balance", 
+        "vault_metric": "Estimated Total Tax to Set Aside", 
+        "total_writeoffs": "Estimated Tax Savings From Receipts", 
+        "peace_of_mind": "🟢 Keep your tax money safe inside your main bank or PayPal account. What remains is **100% yours to spend without guilt.**"
+    },
+    "Español": {
+        "title": "KeepRest", 
+        "caption": "Relájate. Tus impuestos están bajo control. Enfócate en tu negocio.", 
+        "settings_hdr": "⚙️ Configuración", 
+        "state_lbl": "Selecciona tu Estado de EE. UU.", 
+        "income_hdr": "💰 Calculadora de Ingresos", 
+        "income_lbl": "Ingresa el Monto de tu Nuevo Ingreso ($)", 
+        "tax_aside": "Impuesto a guardar en tu cuenta bancaria privada", 
+        "safe_spend": "Dinero libre de culpa que te queda para gastar:", 
+        "expense_hdr": "📁 Bóveda de Recibos y Estimador de Ahorros", 
+        "expense_lbl": "💡 ¿Pierdes tus recibos fácilmente? ¡Ingresa el monto O toma una foto abajo para guardarlo de forma segura!", 
+        "expense_logged": "Ingresa el Total del Recibo ($) - Opcional si subes imagen", 
+        "btn_log": "📁 Guardar en la Bóveda de Recibos",
+        "expense_success": "¡Recibo guardado con éxito! Conservar tus registros reduce tu factura fiscal final.", 
+        "reminder_banner": "⏰ **RECORDATORIO AMISTOSO:** ¡La temporada de impuestos se acerca! Sigue guardando y registrando tus deducciones para estar 100% preparado.",
+        "vault_hdr": "🔒 Balance de tu Libro de Impuestos y Ahorros", 
+        "vault_metric": "Impuesto Total Estimado a Guardar", 
+        "total_writeoffs": "Ahorro de Impuestos Estimado por Recibos", 
+        "peace_of_mind": "🟢 Mantén tu dinero de impuestos seguro en tu banco o cuenta de PayPal. El resto es **100% tuyo para gastar sin culpa.**"
+    },
+    "简体中文": {
+        "title": "KeepRest", 
+        "caption": "放轻松。税款已为您留存。专心发展您的业务即可。", 
+        "settings_hdr": "⚙️ 设置", 
+        "state_lbl": "选择您所在的美国联邦州", 
+        "income_hdr": "💰 收入计算器", 
+        "income_lbl": "输入您的新收入金额 ($)", 
+        "tax_aside": "需存入您个人银行账户的税款", 
+        "safe_spend": "您可以放心消费的剩余金额：", 
+        "expense_hdr": "📁 收据保险库与预计省税估算", 
+        "expense_lbl": "💡 经常弄丢收据？在下方输入金额“或”拍照，即可安全储存以备税期使用！", 
+        "expense_logged": "输入收据总额 ($) - 若上传图片则可选填", 
+        "btn_log": "📁 保存至收据保险库并估算节省金额",
+        "expense_success": "收据已安全保存！保留凭证可降低您最终的税单金额。", 
+        "reminder_banner": "⏰ **温馨税务提示：** 纳税期快到了！请继续保存并记录您的抵税项目，做到100%从容应对。",
+        "vault_hdr": "🔒 您的税务与储蓄账本余额", 
+        "vault_metric": "预估需留存的税款总额", 
+        "total_writeoffs": "收据带来的预估省税总额", 
+        "peace_of_mind": "🟢 请将税款安全存放在您的主银行账户或 PayPal 中。其余资金 **100% 属于您。**"
+    },
+    "Français": {
+        "title": "KeepRest", 
+        "caption": "Détendez-vous. Vos impôts sont gérés. Concentrez-vous sur votre entreprise.", 
+        "settings_hdr": "⚙️ Paramètres", 
+        "state_lbl": "Sélectionnez votre État américain", 
+        "income_hdr": "💰 Calculateur de Revenus", 
+        "income_lbl": "Entrez le montant de votre nouveau revenu ($)", 
+        "tax_aside": "Impôt à mettre de côté sur votre compte bancaire privé", 
+        "safe_spend": "Argent que vous pouvez dépenser l'esprit tranquille :", 
+        "expense_hdr": "📁 Coffre de Reçus & Dépenses (Déductions)", 
+        "expense_lbl": "💡 Vous perdez souvent vos reçus ? Saisissez le montant OU prenez une photo ci-dessous pour les sécuriser !", 
+        "expense_logged": "Entrez le total du reçu ($) - Optionnel si image fournie", 
+        "btn_log": "📁 Enregistrer dans le coffre professionnel",
+        "expense_success": "Reçu sauvegardé ! Conserver vos reçus réduit votre facture fiscale finale.", 
+        "reminder_banner": "⏰ **RAPPEL FISCAL AMICAL :** La période des impôts approche ! Continuez à enregistrer vos déductions pour être prêt à 100%.",
+        "vault_hdr": "🔒 Solde de votre Grand Livre Fiscal et d'Épargne", 
+        "vault_metric": "Impôt total estimé à mettre de côté", 
+        "total_writeoffs": "Économies d'impôt estimées grâce aux reçus", 
+        "peace_of_mind": "🟢 Gardez votre argent pour les impôts en sécurité sur votre compte bancaire principal ou PayPal. Le reste est **100% à vous.**"
+    },
+    "Tiếng Việt": {
+        "title": "KeepRest", 
+        "caption": "Thư giãn đi. Thuế của bạn đã được xử lý. Hãy tập trung phát triển kinh doanh.", 
+        "settings_hdr": "⚙️ Cài đặt", 
+        "state_lbl": "Chọn Bang tại Mỹ của Bạn", 
+        "income_hdr": "💰 Máy tính Doanh thu", 
+        "income_lbl": "Nhập Số tiền Doanh thu Mới của Bạn ($)", 
+        "tax_aside": "Tiền thuế cần trích ra và gửi vào tài khoản ngân hàng của bạn", 
+        "safe_spend": "Số tiền bạn có thể thoải mái chi tiêu:", 
+        "expense_hdr": "📁 Két Lưu Trữ Hóa Đơn & Chi Phí (Khấu Trừ Thuế)", 
+        "expense_lbl": "💡 Bạn hay làm mất hóa đơn? Nhập số tiền HOẶC chụp hình bên dưới để lưu trữ an toàn cho mùa thuế!", 
+        "expense_logged": "Nhập Tổng tiền Hóa đơn ($) - Không bắt buộc nếu có ảnh", 
+        "btn_log": "📁 Lưu vào Két Hóa Đơn & Ước Tính Tiền Tiết Kiệm",
+        "expense_success": "Đã lưu hóa đơn an toàn! Giữ lại hóa đơn sẽ giúp hạ thấp hóa đơn thuế cuối cùng của bạn.", 
+        "reminder_banner": "⏰ **NHẮC NHỞ MÙA THUẾ:** Mùa thuế đang đến rất gần! Hãy tiếp tục tích lũy và ghi nhận chi phí để chuẩn bị sẵn sàng 100%.",
+        "vault_hdr": "🔒 Số dư Sổ cái Thuế & Tiền Tiết kiệm của Bạn", 
+        "vault_metric": "Tổng Tiền Thuế Ước Tính Cần Trích Ra", 
+        "total_writeoffs": "Tiền Tiết Kiệm Thuế Ước Tính Từ Hóa Đơn", 
+        "peace_of_mind": "🟢 Hãy giữ tiền thuế an toàn trong tài khoản ngân hàng chính hoặc ví PayPal của bạn. Số tiền còn lại là **100% của bạn để chi tiêu thoải mái.**"
+    }
 }
 
 state_rates = {"California": 0.33, "New York": 0.32, "Texas": 0.25, "Florida": 0.25, "North Carolina": 0.28, "Illinois": 0.29, "Ohio": 0.27, "Georgia": 0.28, "Pennsylvania": 0.28, "Washington": 0.25, "Virginia": 0.28, "Massachusetts": 0.30}
@@ -19,46 +114,46 @@ lang = translations[selected_lang]
 st.title(f"🛡️ {lang['title']}")
 st.caption(lang["caption"])
 
-if 'tax_vault' not in st.session_state: st.session_state.tax_vault = 1250.00
-if 'expense_vault' not in st.session_state: st.session_state.expense_vault = 340.00
+# Initialize ledger values
+if 'tax_vault' not in st.session_state: st.session_state.tax_vault = 0.00
+if 'estimated_savings' not in st.session_state: st.session_state.estimated_savings = 0.00
+
+st.warning(lang["reminder_banner"])
 
 st.markdown("---")
 st.markdown(f"### {lang['settings_hdr']}")
-col_state, col_mode = st.columns(2)
-with col_state:
-    chosen_state = st.selectbox(lang["state_lbl"], list(state_rates.keys()))
-    tax_rate = state_rates[chosen_state]
-with col_mode:
-    mode = st.radio(lang["mode_lbl"], [lang["mode_ask"], lang["mode_auto"]], index=0)
+chosen_state = st.selectbox(lang["state_lbl"], list(state_rates.keys()))
+tax_rate = state_rates[chosen_state]
 
 st.markdown("---")
 st.markdown(f"### {lang['income_hdr']}")
 income = st.number_input(lang["income_lbl"], min_value=0.0, value=0.0, step=100.0)
-paycheck_file = st.file_uploader("📷 Optional: Scan / Upload Paycheck Image", type=["jpg", "jpeg", "png"])
 
 if income > 0:
     calculated_tax = income * tax_rate
     safe_spend = income - calculated_tax
     st.markdown(f"**{lang['tax_aside']} ({int(tax_rate * 100)}%):** `${calculated_tax:,.2f}`")
-    st.markdown(f"**{lang['safe_spend']}** <span style='color:#1565c0; font-weight:bold;'>${safe_spend:,.2f}</span>", unsafe_allow_html=True)
-    if mode == lang["mode_auto"] and st.button(lang["btn_auto"]):
-        st.session_state.tax_vault += calculated_tax
-    elif mode != lang["mode_auto"] and st.button(f"{lang['btn_ask']} (${calculated_tax:,.2f})"):
-        st.session_state.tax_vault += calculated_tax
+    st.markdown(f"**{lang['safe_spend']}** <span style='color:#1565c0; font-weight:bold; font-size:22px;'>${safe_spend:,.2f}</span>", unsafe_allow_html=True)
+    st.session_state.tax_vault = calculated_tax
 
 st.markdown("---")
 st.markdown(f"### {lang['expense_hdr']}")
 st.caption(lang["expense_lbl"])
-col_exp_pic, col_exp_amt = st.columns(2)
-with col_exp_pic: receipt_file = st.file_uploader("📷 Snap / Upload Receipt Pic", type=["jpg", "jpeg", "png"])
-with col_exp_amt: expense_amt = st.number_input(lang["expense_logged"], min_value=0.0, value=0.0, step=10.0)
 
-if expense_amt > 0 and receipt_file and st.button("📁 Log Receipt to Deductions"):
-    st.session_state.expense_vault += expense_amt
+col_exp_pic, col_exp_amt = st.columns(2)
+with col_exp_pic: 
+    receipt_file = st.file_uploader("📷 Snap / Upload Receipt Pic", type=["jpg", "jpeg", "png"])
+with col_exp_amt: 
+    expense_amt = st.number_input(lang["expense_logged"], min_value=0.0, value=0.0, step=10.0)
+
+if (expense_amt > 0 or receipt_file) and st.button(lang["btn_log"]):
+    base_value = expense_amt if expense_amt > 0 else 50.00
+    st.session_state.estimated_savings += (base_value * 0.15)
+    st.success(lang["expense_success"])
 
 st.markdown("---")
 st.markdown(f"### {lang['vault_hdr']}")
 col1, col2 = st.columns(2)
 with col1: st.metric(label=lang["vault_metric"], value=f"${st.session_state.tax_vault:,.2f}")
-with col2: st.metric(label=lang["total_writeoffs"], value=f"${st.session_state.expense_vault:,.2f}")
+with col2: st.metric(label=lang["total_writeoffs"], value=f"${st.session_state.estimated_savings:,.2f}")
 st.markdown(lang["peace_of_mind"])
