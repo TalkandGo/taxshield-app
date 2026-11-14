@@ -1,134 +1,120 @@
+import csv
+import hmac
+import io
+import zipfile
+from datetime import date
+
 import streamlit as st
 
-# --- 1. INITIALIZE GLOBAL SECURITY STATE ---
+# ------------------------------------------------------------------
+# KeepRest dashboard
+# Secrets (set these in Streamlit > Manage app > Settings > Secrets,
+# NOT in this file):
+#   ACCESS_CODE   = "your-new-passcode"
+#   STRIPE_LINK   = "https://buy.stripe.com/xxxx"      (optional)
+#   PAYPAL_LINK   = "https://www.paypal.com/xxxx"      (optional)
+# ------------------------------------------------------------------
+
+
+def get_secret(name, default=""):
+    """Read a Streamlit secret without crashing if none are set."""
+    try:
+        return str(st.secrets.get(name, default))
+    except Exception:
+        return default
+
+
+ACCESS_CODE = get_secret("ACCESS_CODE")
+STRIPE_SUBSCRIPTION_URL = get_secret("STRIPE_LINK")
+PAYPAL_SUBSCRIPTION_URL = get_secret("PAYPAL_LINK")
+
+# --- 1. SESSION STATE ---
 if "is_subscribed" not in st.session_state:
     st.session_state.is_subscribed = False
+if "receipts" not in st.session_state:
+    st.session_state.receipts = []
+if "widget_round" not in st.session_state:
+    st.session_state.widget_round = 0
 
-# --- 2. CONFIGURABLE CHECKOUT PORTAL URLS ---
-# Paste your active PayPal Subscription Plan Link right here:
-PAYPAL_SUBSCRIPTION_URL = "https://paypal.com"  
-STRIPE_SUBSCRIPTION_URL = "https://stripe.com"  
-
-# --- 3. TRANSLATION MAP ---
-translations = {
-    "English": {
-        "app_title": "KeepRest App Dashboard",
-        "tax_reminder": "📢 FRIENDLY TAX SEASON REMINDER: Tax time is around the corner. Organize your receipts so you are 100% prepared.",
-        "settings_header": "⚙️ Settings",
-        "state_label": "Select Your US State",
-        "calculator_header": "💰 1099 Income Tax Estimator",
-        "income_input_label": "Enter Your 1099 Income Amount ($)",
-        "savings_label": "Amount To Set Aside For Upcoming Taxes",
-        "peace_of_mind": "✨ Your financial data is securely tracked for absolute peace of mind.",
-        "receipt_header": "📂 Receipt Vault & Tax Saver Engine",
-        "receipt_subtext": "Lose your receipts easily? Type the amount OR snap a picture below to keep them safely organized for your tax accountant.",
-        "upload_label": "Snap / Upload Receipt Pic",
-        "paywall_title": "💳 Subscription Required ($12.99/mo)",
-        "paywall_text": "Unlock complete interactive access to your personal KeepRest tax workspace instantly.",
-        "paypal_button_text": "🟡 Subscribe via PayPal",
-        "stripe_button_text": "💳 Subscribe via Stripe",
-        "activation_label": "Owner Bypass or Paid Account? Enter passcode to unlock:",
-        "btn_activate": "Unlock App Dashboard",
-        "preview_banner": "👀 PREVIEW MODE: Below is a read-only preview of what you get when you subscribe.",
-        
-        "demo_title": "📱 How KeepRest Works (Quick Tour):",
-        "step_1": "1️⃣ **Choose your State** - The dashboard instantly loads local rules.",
-        "step_2": "2️⃣ **Input 1099 Revenue** - Know exactly how much to set aside for the IRS.",
-        "step_3": "3️⃣ **Vault Receipts** - Snap and store photos so you never lose a tax deduction write-off."
-    }
+# --- 2. TEXT ---
+t = {
+    "app_title": "KeepRest App Dashboard",
+    "tax_reminder": "📢 FRIENDLY TAX SEASON REMINDER: Tax time is around the corner. Organize your receipts so you are prepared.",
+    "settings_header": "⚙️ Settings",
+    "state_label": "Select Your US State",
+    "calculator_header": "💰 1099 Income Tax Estimator",
+    "income_input_label": "Enter Your 1099 Income Amount ($)",
+    "savings_label": "Rough Amount To Set Aside For Taxes",
+    "estimate_note": "This is a rough estimate using a flat rate. It is not tax advice. Your actual taxes depend on your expenses, filing status and state. Please check with a tax professional.",
+    "receipt_header": "📂 Receipt Log",
+    "receipt_subtext": "Add each receipt with its amount, date and category, plus a photo if you have one. Download your list when you are done.",
+    "privacy_note": "Your receipts are kept only while this page is open. They are not saved permanently, so download your list before you close the page.",
+    "paywall_title": "💳 Subscription Required ($12.99/mo)",
+    "paywall_text": "Unlock your personal KeepRest tax workspace.",
+    "activation_label": "Have an access code? Enter it to unlock:",
+    "btn_activate": "Unlock App Dashboard",
+    "preview_banner": "👀 PREVIEW MODE: Below is a read-only preview of what you get when you subscribe.",
+    "demo_title": "📱 How KeepRest Works (Quick Tour):",
+    "step_1": "1️⃣ **Choose your State** - Get a rough set-aside estimate for your area.",
+    "step_2": "2️⃣ **Enter 1099 Income** - See about how much to put aside for taxes.",
+    "step_3": "3️⃣ **Log Receipts** - Record expenses with photos, then download the list for your accountant.",
 }
 
-t = translations["English"]
+CATEGORIES = [
+    "Supplies",
+    "Mileage / Gas",
+    "Meals",
+    "Software / Subscriptions",
+    "Phone / Internet",
+    "Home office",
+    "Other",
+]
 
-# --- 4. THE CONTENT RENDERING ENGINE ---
-def render_dashboard(disabled_mode=False):
-    st.header(t["settings_header"])
-    
-    # 🇺🇸 COMPLETE 50 US STATES LIST
-    us_states = [
-        "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", 
-        "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho", 
-        "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", 
-        "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", 
-        "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", 
-        "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina", 
-        "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", 
-        "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas", 
-        "Utah", "Vermont", "Virginia", "Washington", "West Virginia", 
-        "Wisconsin", "Wyoming", "Other"
-    ]
-    
-    selected_state = st.selectbox(t["state_label"], options=us_states, disabled=disabled_mode, key="state_box")
+US_STATES = [
+    "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
+    "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
+    "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
+    "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
+    "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
+    "New Hampshire", "New Jersey", "New Mexico", "New York", "North Carolina",
+    "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania",
+    "Rhode Island", "South Carolina", "South Dakota", "Tennessee", "Texas",
+    "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
+    "Wisconsin", "Wyoming", "Other",
+]
 
-    st.header(t["calculator_header"])
-    income = st.number_input(t["income_input_label"], min_value=0.0, step=1000.0, disabled=disabled_mode, key="income_box")
-    
-    # 🧮 SELF-EMPLOYED 1099 TAX BUFFER CALCULATION
-    # Sets aside a 15% buffer for state-tax-free zones or 25% to safely cover combined Self-Employment + State tax cushions
-    no_state_tax = ["Alaska", "Florida", "Nevada", "New Hampshire", "South Dakota", "Tennessee", "Texas", "Washington", "Wyoming"]
-    
-    if selected_state in no_state_tax:
-        tax_rate = 0.15  
-    else:
-        tax_rate = 0.25  
-        
-    calculated_savings = income * tax_rate
-    
-    # Clear, direct financial guidance metric for 1099 workers
-    st.metric(label=t["savings_label"], value=f"${calculated_savings:,.2f}")
-    st.caption(t["peace_of_mind"])
-
-    # Safe account keeper zone for receipt handoffs to CPA/tax pros
-    st.header(t["receipt_header"])
-    st.write(t["receipt_subtext"])
-    st.file_uploader(t["upload_label"], type=["png", "jpg", "jpeg"], disabled=disabled_mode, key="vault_box")
+NO_STATE_TAX = [
+    "Alaska", "Florida", "Nevada", "New Hampshire", "South Dakota",
+    "Tennessee", "Texas", "Washington", "Wyoming",
+]
 
 
-# --- 5. CONDITIONAL PAYWALL ROUTING ---
-st.title(t["app_title"])
+# --- 3. HELPERS ---
+def receipts_csv(receipts):
+    buf = io.StringIO()
+    writer = csv.writer(buf)
+    writer.writerow(["Date", "Category", "Amount", "Note", "Photo file"])
+    for r in receipts:
+        writer.writerow([r["date"], r["category"], f"{r['amount']:.2f}", r["note"], r["photo_name"]])
+    return buf.getvalue().encode("utf-8")
 
-if not st.session_state.is_subscribed:
-    # --- SHOW PAYWALL DIRECTLY ON FRONT PAGE ---
-    with st.container(border=True):
-        st.subheader(t["paywall_title"])
-        st.write(t["paywall_text"])
-        st.divider()
-        
-        # Text Walkthrough Tour card
-        st.markdown(f"### {t['demo_title']}")
-        st.markdown(t["step_1"])
-        st.markdown(t["step_2"])
-        st.markdown(t["step_3"])
-        st.divider()
-        
-        # Checkout Option Gateways
-        st.markdown("### 🔒 Select a Gateway to Subscribe:")
-        c1, c2 = st.columns(2)
-        with c1:
-            st.link_button(t["paypal_button_text"], PAYPAL_SUBSCRIPTION_URL, use_container_width=True)
-        with c2:
-            st.link_button(t["stripe_button_text"], STRIPE_SUBSCRIPTION_URL, use_container_width=True)
-            
-        st.divider()
-        
-        # OWNER / BUYER UNLOCK BOX
-        code = st.text_input(t["activation_label"], placeholder="Type a passcode to unlock...")
-        if st.button(t["btn_activate"], type="primary"):
-            if code.strip() == "securepass123":
-                st.session_state.is_subscribed = True
-                st.rerun()
-            else:
-                st.error("Invalid passcode. Please try again.")
-                
-    st.divider()
-    st.info(t["preview_banner"])
-    render_dashboard(disabled_mode=True)
 
-else:
-    # --- DASHBOARD FULLY UNLOCKED ---
-    st.info(t["tax_reminder"])
-    if st.sidebar.button("Lock Dashboard / Log Out"):
-        st.session_state.is_subscribed = False
-        st.rerun()
-        
-    render_dashboard(disabled_mode=False)
+def receipts_zip(receipts):
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+        for i, r in enumerate(receipts, start=1):
+            if r["photo_bytes"]:
+                zf.writestr(f"{i:03d}_{r['photo_name']}", r["photo_bytes"])
+    return buf.getvalue()
+
+
+def add_receipt(receipt_date, amount, category, note, photo):
+    photo_bytes = photo.getvalue() if photo is not None else b""
+    photo_name = getattr(photo, "name", "") if photo is not None else ""
+    if photo is not None and not photo_name:
+        photo_name = "camera_photo.jpg"
+    st.session_state.receipts.append(
+        {
+            "date": receipt_date.isoformat(),
+            "amount": float(amount),
+            "category":
